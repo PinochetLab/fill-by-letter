@@ -30,7 +30,7 @@ namespace WordBoards
             wordText.text = _currentWord;
             wordText.gameObject.SetActive(_currentWord.Length > 0);
             selectLetterText.gameObject.SetActive(_currentWord.Length == 0);
-            yesButton.interactable = _currentWord.Length > 1 && _gridController.PathContainsNewLetter();
+            yesButton.interactable = _currentWord.Length > 1;
         }
 
         public void AddLetter(char letter)

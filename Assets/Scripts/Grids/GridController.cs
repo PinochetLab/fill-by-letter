@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using AIs;
 using Bonuses;
+using DI;
+using Errors;
 using JetBrains.Annotations;
 using Keyboards;
 using Progress;
@@ -23,6 +25,7 @@ namespace Grids
 
         [SerializeField] private int size = 5;
         [SerializeField] private string word = "баран";
+        [SerializeField] private Vector2Int timerPos = new(4, 1);
 
         [Inject] private LetterKeyboard _letterKeyboard;
         [Inject] private WordBoard _wordBoard;
@@ -30,6 +33,7 @@ namespace Grids
         [Inject] private TrieWordChecker _trieWordChecker;
         [Inject] private BonusController _bonusController;
         [Inject] private WordHinter _wordHinter;
+        [Inject] private ErrorBoard _errorBoard;
         
         [Inject] private HintLetterButton _hintLetterButton;
         [Inject] private HintLetterPlaceButton _hintLetterPlaceButton;
@@ -37,10 +41,18 @@ namespace Grids
         
         [Inject] private DiContainer _container;
 
+        [Inject(Id = "WordIsAlreadyCollected")]
+        private ErrorType _errorTypeWordIsAlreadyCollected;
+        
+        [Inject(Id = "WordDoesNotExist")]
+        private ErrorType _errorTypeWordDoesNotExist;
+        
+        [Inject(Id = "WordDoesNotContainNewLetter")]
+        private ErrorType _errorTypeWordDoesNotContainNewLetter;
+
         public bool CanPath { get; private set; }
         
-        private int _width;
-        private int _height;
+        private int _size;
         private LetterBlock[,] _grid;
         private Solver _solver;
         
@@ -52,6 +64,8 @@ namespace Grids
         private LetterBlock _selectedBlock;
 
         [CanBeNull] private Answer _answer;
+
+        public int Center => _size / 2;
 
         private Answer Answer
         {
@@ -82,12 +96,12 @@ namespace Grids
         private void Awake()
         {
             _solver = _container.Instantiate<Solver>();
-            BuildGrid(size, size);
+            BuildGrid(size);
             SetWord(word);
             _bonusController.ShowBonuses();
         }
 
-        public void BuildGrid(int width, int height)
+        public void BuildGrid(int size)
         {
             gridLayoutGroup.enabled = true;
 
@@ -96,30 +110,31 @@ namespace Grids
                 blocks[i].transform.SetSiblingIndex(i);
             }
             
-            var size = rectTransform.rect.width;
+            var s = rectTransform.rect.width;
 
-            gridLayoutGroup.constraintCount = width;
+            gridLayoutGroup.constraintCount = size;
             
-            var max = Mathf.Max(width, height);
+            var max = Mathf.Max(size, size);
             var sum = (max + (max - 1) * spacingRatio);
-            var cellSize = size / sum;
+            var cellSize = s / sum;
             var spacing = cellSize * spacingRatio;
             
             gridLayoutGroup.cellSize = Vector2.one * cellSize;
             gridLayoutGroup.spacing = Vector2.one * spacing;
             
-            _width = width;
-            _height = height;
-            _grid = new LetterBlock[width, height];
+            _size = size;
+            _grid = new LetterBlock[size, size];
 
             for (var i = 0; i < blocks.Count; i++)
             {
-                if (i < width * height)
+                if (i < size * size)
                 {
                     blocks[i].gameObject.SetActive(true);
                     
-                    var x = i % width;
-                    var y = i / width;
+                    blocks[i].PopUp();
+                    
+                    var x = i % size;
+                    var y = i / size;
 
                     _grid[x, y] = blocks[i];
                     _grid[x, y].SetUp(x, y);
@@ -134,22 +149,22 @@ namespace Grids
         {
             _progressBoard.AddStartWord(word);
             
-            if (word.Length != _width)
+            if (word.Length != _size)
             {
                 Debug.LogError($"Word length {word.Length} is wrong");
                 return;
             }
 
-            var y = _height / 2;
+            var y = Center;
 
-            for (var i = 0; i < _width; i++)
+            for (var i = 0; i < _size; i++)
             {
                 _grid[i, y].SetLetter(word[i]);
             }
             
-            for (var i = 0; i < _width; i++)
+            for (var i = 0; i < _size; i++)
             {
-                for (var j = 0; j < _width; j++)
+                for (var j = 0; j < _size; j++)
                 {
                     if (j == y)
                     {
@@ -165,6 +180,8 @@ namespace Grids
                     }
                 }
             }
+            
+            _grid[timerPos.x, timerPos.y].SetTimer();
         }
 
         public void SelectBlock(LetterBlock block)
@@ -244,6 +261,11 @@ namespace Grids
             _wordBoard.AddLetter(block.Letter);
             gridLayoutGroup.enabled = false;
             block.transform.SetAsFirstSibling();
+            if (HintedPos != null)
+            {
+                var p = HintedPos.Value;
+                _grid[p.x, p.y].transform.SetAsLastSibling();
+            }
             return true;
 
         }
@@ -317,7 +339,7 @@ namespace Grids
             {
                 coordinates.Add(Vector2Int.left);
             }
-            if (x <  _width - 1)
+            if (x <  _size - 1)
             {
                 coordinates.Add(Vector2Int.right);
             }
@@ -325,7 +347,7 @@ namespace Grids
             {
                 coordinates.Add(Vector2Int.down);
             }
-            if (y < _height - 1)
+            if (y < _size - 1)
             {
                 coordinates.Add(Vector2Int.up);
             }
@@ -344,7 +366,7 @@ namespace Grids
             {
                 coordinates.Add(new Vector2Int(x - 1, y));
             }
-            if (x <  _width - 1)
+            if (x < _size - 1)
             {
                 coordinates.Add(new Vector2Int(x + 1, y));
             }
@@ -352,7 +374,7 @@ namespace Grids
             {
                 coordinates.Add(new Vector2Int(x, y - 1));
             }
-            if (y < _height - 1)
+            if (y < _size - 1)
             {
                 coordinates.Add(new Vector2Int(x, y + 1));
             }
@@ -365,7 +387,7 @@ namespace Grids
             return GetNeighbours(new Vector2Int(block.X, block.Y)).Select(v => _grid[v.x, v.y]).ToList();
         }
 
-        public bool PathContainsNewLetter()
+        private bool PathContainsNewLetter()
         {
             return _path.Contains(_selectedBlock);
         }
@@ -374,8 +396,23 @@ namespace Grids
         {
             var word = string.Join("", _path.Select(b => b.Letter.ToString()));
 
-            if (!_trieWordChecker.IsWordCorrect() || !_progressBoard.CanMake(word))
+            if (!PathContainsNewLetter())
             {
+                _errorBoard.PopUp(_errorTypeWordDoesNotContainNewLetter, 
+                    word.ToUpperInvariant(), 
+                    _selectedBlock.Letter.ToString().ToUpperInvariant());
+                return;
+            }
+
+            if (!_trieWordChecker.IsWordCorrect())
+            {
+                _errorBoard.PopUp(_errorTypeWordDoesNotExist, word.ToUpperInvariant());
+                return;
+            }
+
+            if (!_progressBoard.CanMake(word))
+            {
+                _errorBoard.PopUp(_errorTypeWordIsAlreadyCollected, word.ToUpperInvariant());
                 return;
             }
             
@@ -385,6 +422,7 @@ namespace Grids
             
             ClearPath();
             _selectedBlock.State = BlockState.Filled;
+            _selectedBlock.Complete();
 
             foreach (var block in GetNeighbours(_selectedBlock))
             {

@@ -25,6 +25,9 @@ namespace Grids
         [SerializeField] private Transform hint;
         [SerializeField] private float hintDeltaScale = 0.1f;
         [SerializeField] private float scaleDuration = 0.5f;
+        
+        [SerializeField] private GameObject timerGameObject;
+        [SerializeField] private Image timerFilledImage;
 
         [SerializeField] private BlockStateColorPalette bodyColorPalette;
         [SerializeField] private BlockStateColorPalette textColorPalette;
@@ -34,6 +37,7 @@ namespace Grids
         private Image _activeLink;
         
         private Tweener _scaleTweener;
+        private Tweener _fillAmountTweener;
 
         private BlockState _state;
 
@@ -45,6 +49,8 @@ namespace Grids
 
         public int X { get; private set; }
         public int Y { get; private set; }
+
+        private bool _isTimerEnded;
         
         private char? HintedLetter { get; set; }
         
@@ -105,6 +111,24 @@ namespace Grids
             };
         }
 
+        public void SetTimer()
+        {
+            var duration = 30f * Mathf.Abs(Y - _gridController.Center);
+            
+            timerGameObject.SetActive(true);
+
+            _isTimerEnded = false;
+
+            timerFilledImage.fillAmount = 1;
+            _fillAmountTweener = timerFilledImage.DOFillAmount(0, duration).OnComplete(EndTimer);
+        }
+
+        private void EndTimer()
+        {
+            _isTimerEnded = true;
+            timerGameObject.SetActive(false);
+        }
+
         public void SetLetter(char letter)
         {
             Letter = letter;
@@ -120,10 +144,26 @@ namespace Grids
                 .SetLoops(-1, LoopType.Yoyo);
         }
 
+        public void PopUp()
+        {
+            transform.DOKill();
+            transform.localScale = Vector3.zero;
+            transform.DOScale(Vector3.one, 0.2f);
+        }
+
         public void StopHint()
         {
             hint.gameObject.SetActive(false);
             _scaleTweener.Kill();
+        }
+
+        public void Complete()
+        {
+            if (!_isTimerEnded)
+            {
+                _fillAmountTweener?.Kill();
+            }
+            timerGameObject.gameObject.SetActive(false);
         }
 
         public void StartHintLetter(char letter)

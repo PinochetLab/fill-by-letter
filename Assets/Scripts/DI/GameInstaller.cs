@@ -1,4 +1,5 @@
 ﻿using Bonuses;
+using Errors;
 using Grids;
 using Keyboards;
 using Progress;
@@ -22,6 +23,7 @@ namespace DI
         [SerializeField] private HintLetterPlaceButton hintLetterPlaceButton;
         [SerializeField] private HintWordButton hintWordButton;
         [SerializeField] private WordHinter wordHinter;
+        [SerializeField] private ErrorBoard errorBoard;
 
         public override void InstallBindings()
         {
@@ -36,6 +38,7 @@ namespace DI
             Container.Bind<HintLetterPlaceButton>().FromInstance(hintLetterPlaceButton).AsSingle();
             Container.Bind<HintWordButton>().FromInstance(hintWordButton).AsSingle();
             Container.Bind<WordHinter>().FromInstance(wordHinter).AsSingle();
+            Container.Bind<ErrorBoard>().FromInstance(errorBoard).AsSingle();
         }
     }
 }
