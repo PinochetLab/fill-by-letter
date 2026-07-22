@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 40090bde916bdec46834d2706fef4be1
+guid: 056eebd4e3d6b754bbbf164070c36694
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8501917902458883527
-    second: 11638589_0
+      213: -6501690032925468167
+    second: free-icon-coin-8146818_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 64
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 3
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 11638589_0
+      name: free-icon-coin-8146818_0
       rect:
         serializedVersion: 2
-        x: 25
-        y: 47
-        width: 462
-        height: 418
+        x: 50
+        y: 27
+        width: 412
+        height: 458
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 932776a76be130a80800000000000000
-      internalID: -8501917902458883527
+      spriteID: 9f997cbcc5b55c5a0800000000000000
+      internalID: -6501690032925468167
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      11638589_0: -8501917902458883527
+      free-icon-coin-8146818_0: -6501690032925468167
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

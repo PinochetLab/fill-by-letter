@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 40090bde916bdec46834d2706fef4be1
+guid: fcd7382dafa34504d9406089eaf4bc2d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8501917902458883527
-    second: 11638589_0
+      213: -8664014179036876150
+    second: kitty_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -72,10 +72,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 64
+    maxTextureSize: 128
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 3
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 11638589_0
+      name: kitty_0
       rect:
         serializedVersion: 2
-        x: 25
-        y: 47
-        width: 462
-        height: 418
+        x: 41
+        y: 41
+        width: 430
+        height: 429
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 932776a76be130a80800000000000000
-      internalID: -8501917902458883527
+      spriteID: a823f81120d33c780800000000000000
+      internalID: -8664014179036876150
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      11638589_0: -8501917902458883527
+      kitty_0: -8664014179036876150
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

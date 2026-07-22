@@ -29,9 +29,11 @@ namespace Grids
         [Inject] private ProgressBoard _progressBoard;
         [Inject] private TrieWordChecker _trieWordChecker;
         [Inject] private BonusController _bonusController;
+        [Inject] private WordHinter _wordHinter;
         
         [Inject] private HintLetterButton _hintLetterButton;
         [Inject] private HintLetterPlaceButton _hintLetterPlaceButton;
+        [Inject] private HintWordButton _hintWordButton;
         
         [Inject] private DiContainer _container;
 
@@ -94,7 +96,7 @@ namespace Grids
                 blocks[i].transform.SetSiblingIndex(i);
             }
             
-            var size = rectTransform.sizeDelta.x;
+            var size = rectTransform.rect.width;
 
             gridLayoutGroup.constraintCount = width;
             
@@ -126,10 +128,6 @@ namespace Grids
                 else
                     blocks[i].gameObject.SetActive(false);
             }
-            
-            LayoutRebuilder.ForceRebuildLayoutImmediate(gridLayoutGroup.GetComponent<RectTransform>());
-            
-            gridLayoutGroup.enabled = false;
         }
 
         public void SetWord(string word)
@@ -244,6 +242,7 @@ namespace Grids
             _trieWordChecker.AddLetter(block.Letter);
             _path.Add(block);
             _wordBoard.AddLetter(block.Letter);
+            gridLayoutGroup.enabled = false;
             block.transform.SetAsFirstSibling();
             return true;
 
@@ -405,6 +404,7 @@ namespace Grids
         {
             _hintLetterButton.SwitchOff();
             _hintLetterPlaceButton.SwitchOff();
+            _hintWordButton.SwitchOff();
         }
         
         public void StartHintLetter()
@@ -461,6 +461,8 @@ namespace Grids
                 
                 _grid[p.x, p.y].StartHintLetter(HintedLetter.Value);
             }
+            
+            gridLayoutGroup.enabled = false;
 
             _grid[p.x, p.y].StartHint();
         }
@@ -483,6 +485,16 @@ namespace Grids
                     }
                 }
             }
+        }
+
+        public void StartHintWord()
+        {
+            _wordHinter.StartHint(Answer.Word);
+        }
+        
+        public void StopHintWord()
+        {
+            _wordHinter.StopHint();
         }
     }
 }

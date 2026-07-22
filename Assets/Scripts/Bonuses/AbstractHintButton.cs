@@ -7,8 +7,9 @@ namespace Bonuses
 {
     public abstract class AbstractHintButton : MonoBehaviour
     {
-        [SerializeField] private Shadow selection;
-        [SerializeField] private Image adsIcon;
+        [SerializeField] private Shadow shadow;
+        [SerializeField] private Outline selection;
+        [SerializeField] private GameObject priceBoard;
         
         [Inject] protected GridController GridController;
 
@@ -21,8 +22,9 @@ namespace Bonuses
 
         private void UpdateGraphics()
         {
+            priceBoard.SetActive(!_isOn);
+            shadow.enabled = !_isOn;
             selection.enabled = _isOn;
-            adsIcon.enabled = !_isOn;
         }
 
         private void UpdateState()

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 40090bde916bdec46834d2706fef4be1
+guid: e592dcd1d40a77c419a5021c519cfd68
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8501917902458883527
-    second: 11638589_0
+      213: -3430834574875717909
+    second: Magnifier 1_2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 64
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 3
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 11638589_0
+      name: Magnifier 1_2_0
       rect:
         serializedVersion: 2
-        x: 25
-        y: 47
-        width: 462
-        height: 418
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 932776a76be130a80800000000000000
-      internalID: -8501917902458883527
+      spriteID: bee8769a12a3360d0800000000000000
+      internalID: -3430834574875717909
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      11638589_0: -8501917902458883527
+      Magnifier 1_2_0: -3430834574875717909
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
