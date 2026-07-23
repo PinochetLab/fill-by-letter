@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Zenject;
 using DG.Tweening;
+using Money;
 
 namespace Grids
 {
@@ -28,6 +29,7 @@ namespace Grids
         
         [SerializeField] private GameObject timerGameObject;
         [SerializeField] private Image timerFilledImage;
+        [SerializeField] private RectTransform filledCoin;
 
         [SerializeField] private BlockStateColorPalette bodyColorPalette;
         [SerializeField] private BlockStateColorPalette textColorPalette;
@@ -42,6 +44,7 @@ namespace Grids
         private BlockState _state;
 
         [Inject] private GridController _gridController;
+        [Inject] private RewardSpawner _rewardSpawner;
 
         //private const float ChangeColorTime = 0.1f;
         
@@ -49,8 +52,6 @@ namespace Grids
 
         public int X { get; private set; }
         public int Y { get; private set; }
-
-        private bool _isTimerEnded;
         
         private char? HintedLetter { get; set; }
         
@@ -117,15 +118,12 @@ namespace Grids
             
             timerGameObject.SetActive(true);
 
-            _isTimerEnded = false;
-
             timerFilledImage.fillAmount = 1;
             _fillAmountTweener = timerFilledImage.DOFillAmount(0, duration).OnComplete(EndTimer);
         }
 
         private void EndTimer()
         {
-            _isTimerEnded = true;
             timerGameObject.SetActive(false);
         }
 
@@ -159,9 +157,10 @@ namespace Grids
 
         public void Complete()
         {
-            if (!_isTimerEnded)
+            if (_fillAmountTweener is { active: true })
             {
                 _fillAmountTweener?.Kill();
+                _rewardSpawner.SpawnReward(filledCoin.position, 10);
             }
             timerGameObject.gameObject.SetActive(false);
         }

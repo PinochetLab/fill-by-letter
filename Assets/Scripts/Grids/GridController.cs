@@ -6,6 +6,7 @@ using DI;
 using Errors;
 using JetBrains.Annotations;
 using Keyboards;
+using Levels;
 using Progress;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,15 +24,12 @@ namespace Grids
         
         [SerializeField] private List<LetterBlock> blocks;
 
-        [SerializeField] private int size = 5;
-        [SerializeField] private string word = "баран";
-        [SerializeField] private Vector2Int timerPos = new(4, 1);
+        [SerializeField] private Level level;
 
         [Inject] private LetterKeyboard _letterKeyboard;
         [Inject] private WordBoard _wordBoard;
         [Inject] private ProgressBoard _progressBoard;
         [Inject] private TrieWordChecker _trieWordChecker;
-        [Inject] private BonusController _bonusController;
         [Inject] private WordHinter _wordHinter;
         [Inject] private ErrorBoard _errorBoard;
         
@@ -96,9 +94,9 @@ namespace Grids
         private void Awake()
         {
             _solver = _container.Instantiate<Solver>();
-            BuildGrid(size);
-            SetWord(word);
-            _bonusController.ShowBonuses();
+            BuildGrid(level.Size);
+            SetWord(level.Word);
+            _progressBoard.SetUp(level);
         }
 
         public void BuildGrid(int size)
@@ -180,8 +178,11 @@ namespace Grids
                     }
                 }
             }
-            
-            _grid[timerPos.x, timerPos.y].SetTimer();
+
+            foreach (var cell in level.TimeCoins)
+            {
+                _grid[cell.x, cell.y].SetTimer();
+            }
         }
 
         public void SelectBlock(LetterBlock block)
@@ -195,8 +196,6 @@ namespace Grids
             {
                 _selectedBlock.State = BlockState.EmptyAvailable;
             }
-            
-            _bonusController.HideBonuses();
             
             CanPath = false;
             _letterKeyboard.SetInteractable(true);
@@ -214,7 +213,6 @@ namespace Grids
             _letterKeyboard.SetInteractable(false);
             _selectedBlock = null;
             CanPath = false;
-            _bonusController.ShowBonuses();
         }
 
         private char?[,] GetLetters()

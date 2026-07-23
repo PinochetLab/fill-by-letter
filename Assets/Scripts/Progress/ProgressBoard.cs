@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Levels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,27 +11,51 @@ namespace Progress
         [SerializeField] private List<MadeWordBlock> blocks;
         [SerializeField] private RectTransform wordsRt;
         [SerializeField] private TMP_Text scoreText;
+        
+        [SerializeField] private Slider scoreSlider;
+        [SerializeField] private Slider firstScoreGoalSlider;
+        [SerializeField] private Slider secondScoreGoalSlider;
+        [SerializeField] private TMP_Text maxScoreText;
 
-        private HashSet<string> _forbiddenWords = new ();
+        [SerializeField] private List<Color> letterColors;
+
+        private readonly HashSet<string> _forbiddenWords = new ();
 
         private int _score;
+        private int _firstScoreGoal;
+        private int _secondScoreGoal;
+        private int _letterColorIndex;
 
         private readonly List<MadeWordBlock> _madeWords = new();
 
-        private void Awake()
+        public void SetUp(Level level)
         {
-            blocks.ForEach(b => b.gameObject.SetActive(false));
-        }
+            _firstScoreGoal = level.FirstScoreGoal;
+            _secondScoreGoal = level.SecondScoreGoal;
 
-        private void Start()
-        {
-            UpdateScoreText();
+            maxScoreText.text = _secondScoreGoal.ToString();
+            
+            scoreSlider.maxValue = _firstScoreGoal;
+
+            _score = 0;
+            UpdateScore();
+            
+            firstScoreGoalSlider.maxValue = _secondScoreGoal;
+            firstScoreGoalSlider.value = _firstScoreGoal;
+            
+            secondScoreGoalSlider.maxValue = _secondScoreGoal;
+            secondScoreGoalSlider.value = _secondScoreGoal;
+            
+            blocks.ForEach(b => b.gameObject.SetActive(false));
+            _letterColorIndex = Random.Range(0, letterColors.Count);
+            
             LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
         }
 
-        private void UpdateScoreText()
+        private void UpdateScore()
         {
             scoreText.text = _score.ToString();
+            scoreSlider.value = _score;
         }
 
         public void AddStartWord(string word)
@@ -47,7 +72,7 @@ namespace Progress
         {
             _forbiddenWords.Add(word);
             _score += word.Length;
-            UpdateScoreText();
+            UpdateScore();
             MadeWordBlock block;
             if (_madeWords.Count < blocks.Count)
             {
@@ -61,8 +86,10 @@ namespace Progress
                 _madeWords.Add(block);
                 block.transform.SetAsLastSibling();
             }
+            var letterColor = letterColors[_letterColorIndex];
+            _letterColorIndex = (_letterColorIndex + 1) % letterColors.Count;
             block.gameObject.SetActive(true);
-            block.SetWord(word, letterIndex);
+            block.SetWord(word, letterIndex, letterColor);
             LayoutRebuilder.ForceRebuildLayoutImmediate(wordsRt);
         }
     }

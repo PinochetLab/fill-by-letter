@@ -8,12 +8,11 @@ namespace Progress
     public class MadeWordBlock : MonoBehaviour
     {
         [SerializeField] private TMP_Text wordText;
-        [SerializeField] private Color letterColor;
         [SerializeField] private RectTransform rt;
 
         private const string ColorTag = "{0}<color=#{1}>{2}</color>{3}";
 
-        public void SetWord(string word, int letterIndex)
+        public void SetWord(string word, int letterIndex, Color letterColor)
         {
             word = word.ToLower();
             word = word[0].ToString().ToUpper() + word.Substring(1);
