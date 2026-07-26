@@ -4,6 +4,7 @@ using Grids;
 using Keyboards;
 using Money;
 using Progress;
+using Themes;
 using UnityEngine;
 using WordBoards;
 using Words;
@@ -27,6 +28,11 @@ namespace DI
         [SerializeField] private MoneyBoard moneyBoard;
         [SerializeField] private CoinTosser coinTosser;
         [SerializeField] private RewardSpawner rewardSpawner;
+        [SerializeField] private ReplaceButton replaceButton;
+        [SerializeField] private EraseButton eraseButton;
+        [SerializeField] private FlagButton flagButton;
+        [SerializeField] private BonusTutorialBoard bonusTutorialBoard;
+        [SerializeField] private ThemeController themeController;
 
         public override void InstallBindings()
         {
@@ -44,6 +50,11 @@ namespace DI
             Container.Bind<MoneyBoard>().FromInstance(moneyBoard).AsSingle();
             Container.Bind<CoinTosser>().FromInstance(coinTosser).AsSingle();
             Container.Bind<RewardSpawner>().FromInstance(rewardSpawner).AsSingle();
+            Container.Bind<ReplaceButton>().FromInstance(replaceButton).AsSingle();
+            Container.Bind<EraseButton>().FromInstance(eraseButton).AsSingle();
+            Container.Bind<FlagButton>().FromInstance(flagButton).AsSingle();
+            Container.Bind<BonusTutorialBoard>().FromInstance(bonusTutorialBoard).AsSingle();
+            Container.Bind<ThemeController>().FromInstance(themeController).AsSingle();
         }
     }
 }

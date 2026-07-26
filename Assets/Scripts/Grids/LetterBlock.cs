@@ -23,13 +23,21 @@ namespace Grids
         
         [SerializeField] private Image backlight;
         
-        [SerializeField] private Transform hint;
+        [SerializeField] private GameObject selection;
+        [SerializeField] private Transform selectionCircle;
+        
         [SerializeField] private float hintDeltaScale = 0.1f;
         [SerializeField] private float scaleDuration = 0.5f;
         
         [SerializeField] private GameObject timerGameObject;
         [SerializeField] private Image timerFilledImage;
         [SerializeField] private RectTransform filledCoin;
+
+        [SerializeField] private CanvasGroup canvasGroup;
+
+        [SerializeField] private TMP_Text specialLetterText;
+        
+        [SerializeField] private GameObject flag;
 
         [SerializeField] private BlockStateColorPalette bodyColorPalette;
         [SerializeField] private BlockStateColorPalette textColorPalette;
@@ -39,7 +47,9 @@ namespace Grids
         private Image _activeLink;
         
         private Tweener _scaleTweener;
-        private Tweener _fillAmountTweener;
+        private Sequence _timeCoinSequence;
+        private Sequence _timeCoinDisappearSequence;
+        private Sequence _specialLetterDisappearSequence;
 
         private BlockState _state;
 
@@ -50,6 +60,8 @@ namespace Grids
         
         public char Letter { get; private set; }
 
+        private char? SpecialLetter { get; set; }
+
         public int X { get; private set; }
         public int Y { get; private set; }
         
@@ -59,7 +71,8 @@ namespace Grids
 
         private void Awake()
         {
-            hint.gameObject.SetActive(false);
+            selection.SetActive(false);
+            flag.SetActive(false);
         }
 
         public BlockState State
@@ -77,6 +90,22 @@ namespace Grids
                 if (value == BlockState.EmptySelected)
                 {
                     SetLetter('?');
+                }
+
+                if (value == BlockState.Flag)
+                {
+                    text.gameObject.SetActive(false);
+                    flag.SetActive(true);
+
+                    if (_timeCoinSequence is not null && _timeCoinSequence.IsPlaying())
+                    {
+                        EndTimer();
+                    }
+
+                    if (SpecialLetter is not null)
+                    {
+                        EndSpecialLetter();
+                    } 
                 }
                 
                 backlight.gameObject.SetActive(value == BlockState.FilledNewPath);
@@ -110,6 +139,15 @@ namespace Grids
                 { new Vector2Int(0, 1), bottomLink },
                 { new Vector2Int(0, -1), topLink },
             };
+            
+            specialLetterText.gameObject.SetActive(false);
+        }
+
+        public void SetSpecialLetter(char letter)
+        {
+            SpecialLetter = letter;
+            specialLetterText.gameObject.SetActive(true);
+            specialLetterText.text = letter.ToString();
         }
 
         public void SetTimer()
@@ -119,12 +157,37 @@ namespace Grids
             timerGameObject.SetActive(true);
 
             timerFilledImage.fillAmount = 1;
-            _fillAmountTweener = timerFilledImage.DOFillAmount(0, duration).OnComplete(EndTimer);
+            
+            _timeCoinSequence.Kill();
+            _timeCoinDisappearSequence.Kill();
+            
+            _timeCoinSequence = DOTween.Sequence()
+                .Append(timerFilledImage.DOFillAmount(0, duration))
+                .OnComplete(EndTimer)
+                .Play();
         }
 
         private void EndTimer()
         {
-            timerGameObject.SetActive(false);
+            _timeCoinSequence.Kill();
+            _timeCoinDisappearSequence.Kill();
+            
+            _timeCoinDisappearSequence = DOTween.Sequence()
+                .Append(timerGameObject.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                .Append(timerGameObject.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .OnComplete(() => timerGameObject.SetActive(false))
+                .Play();
+        }
+        
+        private void EndSpecialLetter()
+        {
+            _specialLetterDisappearSequence.Kill();
+            
+            _specialLetterDisappearSequence = DOTween.Sequence()
+                .Append(specialLetterText.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                .Append(specialLetterText.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .OnComplete(() => specialLetterText.gameObject.SetActive(false))
+                .Play();
         }
 
         public void SetLetter(char letter)
@@ -136,10 +199,17 @@ namespace Grids
         public void StartHint()
         {
             transform.SetAsLastSibling();
-            hint.gameObject.SetActive(true);
-            _scaleTweener = hint.DOScale(Vector3.one * (1 + hintDeltaScale), scaleDuration / 2)
+            selection.SetActive(true);
+            
+            _scaleTweener = selectionCircle
+                .DORotate(new Vector3(0, 0, 360), 5f, RotateMode.FastBeyond360)
+                .SetEase(Ease.Linear)
+                .SetLoops(-1, LoopType.Restart)
+                .SetUpdate(true);
+            
+            /*_scaleTweener = hint.DOScale(Vector3.one * (1 + hintDeltaScale), scaleDuration / 2)
                 .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo);
+                .SetLoops(-1, LoopType.Yoyo);*/
         }
 
         public void PopUp()
@@ -151,18 +221,41 @@ namespace Grids
 
         public void StopHint()
         {
-            hint.gameObject.SetActive(false);
+            selection.SetActive(false);
             _scaleTweener.Kill();
+        }
+
+        public void Hide()
+        {
+            canvasGroup.enabled = true;
+        }
+        
+        public void Show()
+        {
+            canvasGroup.enabled = false;
         }
 
         public void Complete()
         {
-            if (_fillAmountTweener is { active: true })
+            if (_timeCoinSequence is not null && _timeCoinSequence.IsPlaying())
             {
-                _fillAmountTweener?.Kill();
+                _timeCoinSequence?.Kill();
                 _rewardSpawner.SpawnReward(filledCoin.position, 10);
+                timerGameObject.gameObject.SetActive(false);
             }
-            timerGameObject.gameObject.SetActive(false);
+
+            if (SpecialLetter is not null)
+            {
+                if (Letter == SpecialLetter)
+                {
+                    _rewardSpawner.SpawnReward(filledCoin.position, 10);
+                    specialLetterText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    EndSpecialLetter();
+                }
+            }
         }
 
         public void StartHintLetter(char letter)
@@ -202,6 +295,43 @@ namespace Grids
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (_gridController.Flag)
+            {
+                switch (State)
+                {
+                    case BlockState.EmptyNotAvailable:
+                    case BlockState.EmptyAvailable:
+                        _gridController.ChooseFlag(this);
+                        break;
+                }
+
+                return;
+            }
+            
+            if (_gridController.Erase)
+            {
+                switch (State)
+                {
+                    case BlockState.Filled:
+                        _gridController.ChooseErase(this);
+                        break;
+                }
+
+                return;
+            }
+            
+            if (_gridController.Replace && _gridController.ReplacePlace is null)
+            {
+                switch (State)
+                {
+                    case BlockState.Filled:
+                        _gridController.ChooseReplace(this);
+                        break;
+                }
+
+                return;
+            }
+            
             switch (State)
             {
                 case BlockState.EmptyAvailable:

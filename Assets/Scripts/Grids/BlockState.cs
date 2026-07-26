@@ -8,6 +8,7 @@
         FilledNew,
         FilledNewPath,
         Filled,
-        FilledPath
+        FilledPath,
+        Flag
     }
 }

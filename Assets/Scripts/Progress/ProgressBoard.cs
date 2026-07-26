@@ -68,10 +68,10 @@ namespace Progress
             return !_forbiddenWords.Contains(word);
         }
 
-        public void MakeWord(string word, int letterIndex)
+        public void MakeWord(string word, int score, int letterIndex)
         {
             _forbiddenWords.Add(word);
-            _score += word.Length;
+            _score += score;
             UpdateScore();
             MadeWordBlock block;
             if (_madeWords.Count < blocks.Count)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Money;
+using Themes;
 using UnityEngine;
 
 namespace Levels
@@ -16,6 +17,8 @@ namespace Levels
         [SerializeField] private List<Vector2Int> timeCoins;
         [SerializeField] private List<LetterCoinInfo> letterCoins;
         
+        [SerializeField] private Theme theme;
+        
         public int Size => size;
         
         public string Word => word;
@@ -27,5 +30,7 @@ namespace Levels
         public List<Vector2Int> TimeCoins => timeCoins;
         
         public List<LetterCoinInfo> LetterCoins => letterCoins;
+        
+        public Theme Theme => theme;
     }
 }

@@ -27,3 +27,5 @@ MonoBehaviour:
     color: {r: 0.72264147, g: 0.95959014, b: 1, a: 1}
   - state: 6
     color: {r: 0, g: 0.5058824, b: 0.5921569, a: 1}
+  - state: 7
+    color: {r: 1, g: 1, b: 1, a: 1}

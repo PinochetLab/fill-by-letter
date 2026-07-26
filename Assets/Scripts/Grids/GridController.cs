@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using AIs;
 using Bonuses;
 using DI;
@@ -8,6 +9,7 @@ using JetBrains.Annotations;
 using Keyboards;
 using Levels;
 using Progress;
+using Themes;
 using UnityEngine;
 using UnityEngine.UI;
 using WordBoards;
@@ -36,6 +38,11 @@ namespace Grids
         [Inject] private HintLetterButton _hintLetterButton;
         [Inject] private HintLetterPlaceButton _hintLetterPlaceButton;
         [Inject] private HintWordButton _hintWordButton;
+        [Inject] private ReplaceButton _replaceButton;
+        [Inject] private EraseButton _eraseButton;
+        [Inject] private FlagButton _flagButton;
+        
+        [Inject] private ThemeController _themeController;
         
         [Inject] private DiContainer _container;
 
@@ -60,6 +67,14 @@ namespace Grids
         private List<LetterBlock> _path = new ();
 
         private LetterBlock _selectedBlock;
+
+        public bool Replace { get; private set; }
+        
+        public Vector2Int? ReplacePlace { get; private set; }
+        
+        public bool Erase { get; private set; }
+        
+        public bool Flag { get; private set; }
 
         [CanBeNull] private Answer _answer;
 
@@ -97,6 +112,7 @@ namespace Grids
             BuildGrid(level.Size);
             SetWord(level.Word);
             _progressBoard.SetUp(level);
+            _themeController.SetTheme(level.Theme);
         }
 
         public void BuildGrid(int size)
@@ -183,6 +199,12 @@ namespace Grids
             {
                 _grid[cell.x, cell.y].SetTimer();
             }
+            
+            foreach (var letterCoinInfo in level.LetterCoins)
+            {
+                var pos = letterCoinInfo.Position;
+                _grid[pos.x, pos.y].SetSpecialLetter(letterCoinInfo.Letter);
+            }
         }
 
         public void SelectBlock(LetterBlock block)
@@ -239,12 +261,24 @@ namespace Grids
 
         public void TypeLetter(char letter)
         {
-            _selectedBlock.SetLetter(letter);
-            _selectedBlock.State = BlockState.FilledNew;
-            _path.Clear();
-            CanPath = true;
-            _letterKeyboard.SetInteractable(false);
-            _wordBoard.Show();
+            if (ReplacePlace is not null)
+            {
+                var p = ReplacePlace.Value;
+                _grid[p.x, p.y].SetLetter(letter);
+                _letterKeyboard.SetInteractable(false);
+                _replaceButton.SwitchOff();
+                StopReplace();
+                SwitchOffBonuses();
+            }
+            else
+            {
+                _selectedBlock.SetLetter(letter);
+                _selectedBlock.State = BlockState.FilledNew;
+                _path.Clear();
+                CanPath = true;
+                _letterKeyboard.SetInteractable(false);
+                _wordBoard.Show();
+            }
         }
 
         public bool TryAddToPath(LetterBlock block)
@@ -415,8 +449,12 @@ namespace Grids
             }
             
             var letterIndex = _path.IndexOf(_selectedBlock);
+
+            var score = _themeController.GetScore(word);
             
-            _progressBoard.MakeWord(word, letterIndex);
+            _progressBoard.MakeWord(word, score, letterIndex);
+            
+            _wordHinter.StopHint();
             
             ClearPath();
             _selectedBlock.State = BlockState.Filled;
@@ -531,6 +569,164 @@ namespace Grids
         public void StopHintWord()
         {
             _wordHinter.StopHint();
+        }
+
+        public void StartReplace()
+        {
+            gridLayoutGroup.enabled = false;
+            
+            _eraseButton.SetInteractable(false);
+            _flagButton.SetInteractable(false);
+            
+            foreach (var block in _grid)
+            {
+                if (block.State != BlockState.Filled)
+                {
+                    block.Hide();
+                }
+                else
+                {
+                    block.StartHint();
+                }
+            }
+            
+            Time.timeScale = 0f;
+
+            Replace = true;
+            ReplacePlace = null;
+        }
+
+        public void StopReplace()
+        {
+            foreach (var block in _grid)
+            {
+                block.Show();
+                block.StopHint();
+            }
+
+            Time.timeScale = 1f;
+
+            Replace = false;
+            
+            _eraseButton.SetInteractable(true);
+            _flagButton.SetInteractable(true);
+        }
+
+        public void ChooseReplace(LetterBlock block)
+        {
+            foreach (var b in _grid)
+            {
+                b.Hide();
+                b.StopHint();
+            }
+            block.Show();
+            block.StartHint();
+            
+            block.SetLetter('?');
+            ReplacePlace = block.Position;
+            _letterKeyboard.SetInteractable(true);
+        }
+        
+        public void StartErase()
+        {
+            gridLayoutGroup.enabled = false;
+            
+            _replaceButton.SetInteractable(false);
+            _flagButton.SetInteractable(false);
+            
+            foreach (var block in _grid)
+            {
+                if (block.State != BlockState.Filled)
+                {
+                    block.Hide();
+                }
+                else
+                {
+                    block.StartHint();
+                }
+            }
+            
+            Time.timeScale = 0f;
+
+            Erase = true;
+        }
+
+        public void StopErase()
+        {
+            foreach (var block in _grid)
+            {
+                block.Show();
+                block.StopHint();
+            }
+
+            Time.timeScale = 1f;
+
+            Erase = false;
+            
+            _replaceButton.SetInteractable(true);
+            _flagButton.SetInteractable(true);
+        }
+
+        public void ChooseErase(LetterBlock block)
+        {
+            block.State = BlockState.EmptyAvailable;
+
+            StopErase();
+            
+            _eraseButton.SwitchOff();
+            
+            SwitchOffBonuses();
+        }
+        
+        public void StartFlag()
+        {
+            gridLayoutGroup.enabled = false;
+            
+            _replaceButton.SetInteractable(false);
+            _eraseButton.SetInteractable(false);
+            
+            foreach (var block in _grid)
+            {
+                if (block.State == BlockState.Filled)
+                {
+                    block.Hide();
+                }
+                else
+                {
+                    block.StartHint();
+                }
+            }
+            
+            Time.timeScale = 0f;
+
+            Flag = true;
+        }
+
+        public void StopFlag()
+        {
+            foreach (var block in _grid)
+            {
+                block.Show();
+                block.StopHint();
+            }
+
+            Time.timeScale = 1f;
+
+            Flag = false;
+            
+            _replaceButton.SetInteractable(true);
+            _eraseButton.SetInteractable(true);
+        }
+
+        public void ChooseFlag(LetterBlock block)
+        {
+            block.State = BlockState.Flag;
+
+            StopFlag();
+            
+            _flagButton.SwitchOff();
+            
+            SwitchOffBonuses();
         }
     }
 }

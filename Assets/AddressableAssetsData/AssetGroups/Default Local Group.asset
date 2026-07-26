@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c8f2ee1f172a7349b4ad2c135260a28
+    m_Address: Assets/Dictionaries/HashSet/animals.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: de61f056b7280de4fab6984c36b6d3ce
     m_Address: Assets/Dictionaries/HashSet/russian.json
     m_ReadOnly: 0

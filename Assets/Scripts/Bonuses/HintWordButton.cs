@@ -1,6 +1,6 @@
 ﻿namespace Bonuses
 {
-    public class HintWordButton : AbstractHintButton
+    public class HintWordButton : AbstractBonusButton
     {
         protected override void OnOn()
         {
