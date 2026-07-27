@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using Zenject;
 using DG.Tweening;
 using Money;
+using Random = UnityEngine.Random;
 
 namespace Grids
 {
@@ -24,7 +25,6 @@ namespace Grids
         [SerializeField] private Image backlight;
         
         [SerializeField] private GameObject selection;
-        [SerializeField] private Transform selectionCircle;
         
         [SerializeField] private float hintDeltaScale = 0.1f;
         [SerializeField] private float scaleDuration = 0.5f;
@@ -35,6 +35,7 @@ namespace Grids
 
         [SerializeField] private CanvasGroup canvasGroup;
 
+        [SerializeField] private GameObject specialLetter;
         [SerializeField] private TMP_Text specialLetterText;
         
         [SerializeField] private GameObject flag;
@@ -112,16 +113,27 @@ namespace Grids
 
                 var bodyColor = bodyColorPalette.GetColor(value);
                 
-                //_links.Values.ToList().ForEach(l => l.DOColor(bodyColor, ChangeColorTime));
-                _links.Values.ToList().ForEach(l => l.color = bodyColor);
+                if (value == BlockState.Filled)
+                {
+                    var v = Random.insideUnitSphere * 0.1f;
+                    var r = Mathf.Clamp01(bodyColor.r + v.x);
+                    var g = Mathf.Clamp01(bodyColor.g + v.y);
+                    var b = Mathf.Clamp01(bodyColor.b + v.z);
+                    bodyColor = new Color(r, g, b);
+                }
+
+                const float changeColorTime = 0.2f;
                 
-                //image.DOColor(bodyColor, ChangeColorTime);
-                image.color = bodyColor;
+                _links.Values.ToList().ForEach(l => l.DOColor(bodyColor, changeColorTime));
+                //_links.Values.ToList().ForEach(l => l.color = bodyColor);
+                
+                image.DOColor(bodyColor, changeColorTime);
+                //image.color = bodyColor;
 
                 var textColor = textColorPalette.GetColor(value);
                 
-                //text.DOColor(textColor, ChangeColorTime);
-                text.color = textColor;
+                text.DOColor(textColor, changeColorTime);
+                //text.color = textColor;
 
                 _state = value;
             }
@@ -140,13 +152,13 @@ namespace Grids
                 { new Vector2Int(0, -1), topLink },
             };
             
-            specialLetterText.gameObject.SetActive(false);
+            specialLetter.SetActive(false);
         }
 
         public void SetSpecialLetter(char letter)
         {
             SpecialLetter = letter;
-            specialLetterText.gameObject.SetActive(true);
+            specialLetter.SetActive(true);
             specialLetterText.text = letter.ToString();
         }
 
@@ -184,9 +196,9 @@ namespace Grids
             _specialLetterDisappearSequence.Kill();
             
             _specialLetterDisappearSequence = DOTween.Sequence()
-                .Append(specialLetterText.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
-                .Append(specialLetterText.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
-                .OnComplete(() => specialLetterText.gameObject.SetActive(false))
+                .Append(specialLetter.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                .Append(specialLetter.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .OnComplete(() => specialLetter.gameObject.SetActive(false))
                 .Play();
         }
 
@@ -201,15 +213,20 @@ namespace Grids
             transform.SetAsLastSibling();
             selection.SetActive(true);
             
-            _scaleTweener = selectionCircle
+            /*_scaleTweener = selectionCircle
                 .DORotate(new Vector3(0, 0, 360), 5f, RotateMode.FastBeyond360)
                 .SetEase(Ease.Linear)
                 .SetLoops(-1, LoopType.Restart)
-                .SetUpdate(true);
+                .SetUpdate(true);*/
             
-            /*_scaleTweener = hint.DOScale(Vector3.one * (1 + hintDeltaScale), scaleDuration / 2)
+            _scaleTweener.Kill();
+
+            selection.transform.localScale = Vector3.one;
+            
+            _scaleTweener = selection.transform.DOScale(1 - hintDeltaScale, scaleDuration / 2)
                 .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo);*/
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetUpdate(true);
         }
 
         public void PopUp()
@@ -249,7 +266,7 @@ namespace Grids
                 if (Letter == SpecialLetter)
                 {
                     _rewardSpawner.SpawnReward(filledCoin.position, 10);
-                    specialLetterText.gameObject.SetActive(false);
+                    specialLetter.SetActive(false);
                 }
                 else
                 {

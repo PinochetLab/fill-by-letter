@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Money
 {
@@ -46,9 +47,18 @@ namespace Money
             
             var sequence = DOTween.Sequence();
             
+            var arcHeight = 800f;
+            var midPoint = (startPos + endPos) / 2;
+            midPoint.y += arcHeight + Random.Range(-0.5f, 0.5f);
+            
+            Vector3[] path = { startPos, midPoint, endPos };
+            
+            //sequence.Append(coin.DOPath(path, duration, PathType.CatmullRom).SetEase(Ease.OutQuad));
             sequence.Append(coin.DOMove(endPos, duration).SetEase(Ease.OutQuad));
             
             sequence.Join(coin.DOSizeDelta(endSize, duration).SetEase(Ease.InOutQuad));
+            
+            sequence.SetUpdate(true);
             
             sequence.AppendCallback(() => ReleaseCoin(coin));
     

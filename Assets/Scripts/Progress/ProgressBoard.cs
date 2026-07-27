@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using DG.Tweening;
 using Levels;
+using Money;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
+using Random = UnityEngine.Random;
 
 namespace Progress
 {
@@ -16,6 +21,9 @@ namespace Progress
         [SerializeField] private Slider firstScoreGoalSlider;
         [SerializeField] private Slider secondScoreGoalSlider;
         [SerializeField] private TMP_Text maxScoreText;
+        
+        [SerializeField] private RectTransform firstScoreGoalChest;
+        [SerializeField] private RectTransform secondScoreGoalChest;
 
         [SerializeField] private List<Color> letterColors;
 
@@ -25,17 +33,33 @@ namespace Progress
         private int _firstScoreGoal;
         private int _secondScoreGoal;
         private int _letterColorIndex;
+        private float _speed;
+
+        private bool _firstScoreGoalReached;
+        private bool _secondScoreGoalReached;
+
+        private Tweener _sliderTweener;
+
+        [Inject] private TreasureBoard _treasureBoard;
 
         private readonly List<MadeWordBlock> _madeWords = new();
 
         public void SetUp(Level level)
         {
+            _firstScoreGoalReached = false;
+            _secondScoreGoalReached = false;
+            
+            firstScoreGoalChest.gameObject.SetActive(true);
+            secondScoreGoalChest.gameObject.SetActive(true);
+            
             _firstScoreGoal = level.FirstScoreGoal;
             _secondScoreGoal = level.SecondScoreGoal;
 
+            _speed = _secondScoreGoal;
+
             maxScoreText.text = _secondScoreGoal.ToString();
             
-            scoreSlider.maxValue = _firstScoreGoal;
+            scoreSlider.maxValue = _secondScoreGoal;
 
             _score = 0;
             UpdateScore();
@@ -52,10 +76,44 @@ namespace Progress
             LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
         }
 
-        private void UpdateScore()
+        private void AddScore(int score)
         {
             scoreText.text = _score.ToString();
             scoreSlider.value = _score;
+            
+            var newScore = _score + score;
+            
+            var delta = Mathf.Abs(newScore - _score);
+
+            var duration = delta / _speed;
+            
+            _sliderTweener.Kill();
+            _sliderTweener = scoreSlider.DOValue(newScore, duration);
+            
+            _score = newScore;
+            UpdateScore();
+        }
+
+        private void UpdateScore()
+        {
+            scoreText.text = _score.ToString();
+        }
+
+        private void Update()
+        {
+            if (!_firstScoreGoalReached && scoreSlider.value >= _firstScoreGoal)
+            {
+                _firstScoreGoalReached = true;
+                _treasureBoard.OpenChest(firstScoreGoalChest, Random.Range(8, 13));
+                firstScoreGoalChest.gameObject.SetActive(false);
+            }
+            
+            if (!_secondScoreGoalReached && scoreSlider.value >= _secondScoreGoal)
+            {
+                _secondScoreGoalReached = true;
+                _treasureBoard.OpenChest(secondScoreGoalChest, Random.Range(18, 23));
+                secondScoreGoalChest.gameObject.SetActive(false);
+            }
         }
 
         public void AddStartWord(string word)
@@ -71,8 +129,7 @@ namespace Progress
         public void MakeWord(string word, int score, int letterIndex)
         {
             _forbiddenWords.Add(word);
-            _score += score;
-            UpdateScore();
+            AddScore(score);
             MadeWordBlock block;
             if (_madeWords.Count < blocks.Count)
             {

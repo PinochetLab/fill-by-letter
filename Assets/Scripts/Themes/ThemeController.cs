@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Words;
+using Zenject;
 
 namespace Themes
 {
-    public class ThemeController : MonoBehaviour
+    public class ThemeController : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private Image themeImage;
         [SerializeField] private TMP_Text multiplierText;
+        
+        [Inject] private ThemeTutorialBoard _themeTutorialBoard;
 
         private Theme _theme;
         
@@ -86,6 +90,12 @@ namespace Themes
                 return word.Length * _theme.Multiplier;
             }
             return word.Length;
+        }
+
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            _themeTutorialBoard.Show(_theme);
         }
     }
 }

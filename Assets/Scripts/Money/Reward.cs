@@ -36,6 +36,7 @@ namespace Money
             
             sequence.Append(transform.DOMove(endPosition, duration).SetEase(Ease.OutSine));
             sequence.Join(transform.DOScale(Vector3.one, duration).SetEase(Ease.OutExpo));
+            sequence.SetUpdate(true);
             
             sequence.AppendCallback(EndMove);
             

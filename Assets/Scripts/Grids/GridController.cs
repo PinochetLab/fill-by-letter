@@ -220,7 +220,7 @@ namespace Grids
             }
             
             CanPath = false;
-            _letterKeyboard.SetInteractable(true);
+            _letterKeyboard.Show();
             _selectedBlock = block;
         }
 
@@ -232,7 +232,7 @@ namespace Grids
 
         public void DeselectBlock()
         {
-            _letterKeyboard.SetInteractable(false);
+            _letterKeyboard.Hide();
             _selectedBlock = null;
             CanPath = false;
         }
@@ -265,7 +265,7 @@ namespace Grids
             {
                 var p = ReplacePlace.Value;
                 _grid[p.x, p.y].SetLetter(letter);
-                _letterKeyboard.SetInteractable(false);
+                _letterKeyboard.Hide();
                 _replaceButton.SwitchOff();
                 StopReplace();
                 SwitchOffBonuses();
@@ -276,7 +276,7 @@ namespace Grids
                 _selectedBlock.State = BlockState.FilledNew;
                 _path.Clear();
                 CanPath = true;
-                _letterKeyboard.SetInteractable(false);
+                _letterKeyboard.Hide();
                 _wordBoard.Show();
             }
         }
@@ -479,10 +479,18 @@ namespace Grids
             _hintLetterButton.SwitchOff();
             _hintLetterPlaceButton.SwitchOff();
             _hintWordButton.SwitchOff();
+            
+            StopHintLetter();
+            StopHintLetterPlace();
+            StopHintWord();
         }
         
         public void StartHintLetter()
         {
+            _replaceButton.SetInteractable(false);
+            _eraseButton.SetInteractable(false);
+            _flagButton.SetInteractable(false);
+            
             var letter = Answer.Letter;
 
             HintedLetter = letter;
@@ -515,10 +523,18 @@ namespace Grids
                     block.StopHintLetter();
                 }
             }
+            
+            _replaceButton.SetInteractable(true);
+            _eraseButton.SetInteractable(true);
+            _flagButton.SetInteractable(true);
         }
         
         public void StartHintLetterPlace()
         {
+            _replaceButton.SetInteractable(false);
+            _eraseButton.SetInteractable(false);
+            _flagButton.SetInteractable(false);
+            
             var p = Answer.LetterPos;
 
             HintedPos = p;
@@ -559,16 +575,28 @@ namespace Grids
                     }
                 }
             }
+            
+            _replaceButton.SetInteractable(true);
+            _eraseButton.SetInteractable(true);
+            _flagButton.SetInteractable(true);
         }
 
         public void StartHintWord()
         {
+            _replaceButton.SetInteractable(false);
+            _eraseButton.SetInteractable(false);
+            _flagButton.SetInteractable(false);
+            
             _wordHinter.StartHint(Answer.Word);
         }
         
         public void StopHintWord()
         {
             _wordHinter.StopHint();
+            
+            _replaceButton.SetInteractable(true);
+            _eraseButton.SetInteractable(true);
+            _flagButton.SetInteractable(true);
         }
 
         public void StartReplace()
@@ -577,6 +605,9 @@ namespace Grids
             
             _eraseButton.SetInteractable(false);
             _flagButton.SetInteractable(false);
+            _hintLetterButton.SetInteractable(false);
+            _hintLetterPlaceButton.SetInteractable(false);
+            _hintWordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -607,9 +638,13 @@ namespace Grids
             Time.timeScale = 1f;
 
             Replace = false;
+            ReplacePlace = null;
             
             _eraseButton.SetInteractable(true);
             _flagButton.SetInteractable(true);
+            _hintLetterButton.SetInteractable(true);
+            _hintLetterPlaceButton.SetInteractable(true);
+            _hintWordButton.SetInteractable(true);
         }
 
         public void ChooseReplace(LetterBlock block)
@@ -624,7 +659,7 @@ namespace Grids
             
             block.SetLetter('?');
             ReplacePlace = block.Position;
-            _letterKeyboard.SetInteractable(true);
+            _letterKeyboard.Show();
         }
         
         public void StartErase()
@@ -633,6 +668,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(false);
             _flagButton.SetInteractable(false);
+            _hintLetterButton.SetInteractable(false);
+            _hintLetterPlaceButton.SetInteractable(false);
+            _hintWordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -665,6 +703,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(true);
             _flagButton.SetInteractable(true);
+            _hintLetterButton.SetInteractable(true);
+            _hintLetterPlaceButton.SetInteractable(true);
+            _hintWordButton.SetInteractable(true);
         }
 
         public void ChooseErase(LetterBlock block)
@@ -684,6 +725,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(false);
             _eraseButton.SetInteractable(false);
+            _hintLetterButton.SetInteractable(false);
+            _hintLetterPlaceButton.SetInteractable(false);
+            _hintWordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -716,6 +760,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(true);
             _eraseButton.SetInteractable(true);
+            _hintLetterButton.SetInteractable(true);
+            _hintLetterPlaceButton.SetInteractable(true);
+            _hintWordButton.SetInteractable(true);
         }
 
         public void ChooseFlag(LetterBlock block)

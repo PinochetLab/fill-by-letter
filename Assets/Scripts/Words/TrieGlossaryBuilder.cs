@@ -1,4 +1,6 @@
-﻿using Tries;
+﻿#if UNITY_EDITOR
+
+using Tries;
 
 namespace Words
 {
@@ -21,3 +23,5 @@ namespace Words
         }
     }
 }
+
+#endif

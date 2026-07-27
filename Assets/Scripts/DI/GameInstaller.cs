@@ -33,6 +33,8 @@ namespace DI
         [SerializeField] private FlagButton flagButton;
         [SerializeField] private BonusTutorialBoard bonusTutorialBoard;
         [SerializeField] private ThemeController themeController;
+        [SerializeField] private ThemeTutorialBoard themeTutorialBoard;
+        [SerializeField] private TreasureBoard treasureBoard;
 
         public override void InstallBindings()
         {
@@ -55,6 +57,8 @@ namespace DI
             Container.Bind<FlagButton>().FromInstance(flagButton).AsSingle();
             Container.Bind<BonusTutorialBoard>().FromInstance(bonusTutorialBoard).AsSingle();
             Container.Bind<ThemeController>().FromInstance(themeController).AsSingle();
+            Container.Bind<ThemeTutorialBoard>().FromInstance(themeTutorialBoard).AsSingle();
+            Container.Bind<TreasureBoard>().FromInstance(treasureBoard).AsSingle();
         }
     }
 }
