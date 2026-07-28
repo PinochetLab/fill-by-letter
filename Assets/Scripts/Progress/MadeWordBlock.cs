@@ -9,6 +9,7 @@ namespace Progress
     {
         [SerializeField] private TMP_Text wordText;
         [SerializeField] private RectTransform rt;
+        [SerializeField] private ContentSizeFitter contentSizeFitter;
 
         private const string ColorTag = "{0}<color=#{1}>{2}</color>{3}";
 
@@ -31,6 +32,8 @@ namespace Progress
             wordText.text = string.Format(ColorTag, begin, hexString, letterString, end);
             
             LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            
+            contentSizeFitter.enabled = false;
         }
     }
 }

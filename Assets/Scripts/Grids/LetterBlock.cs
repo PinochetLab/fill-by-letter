@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 
 namespace Grids
 {
-    public class LetterBlock : MonoBehaviour, IPointerClickHandler
+    public class LetterBlock : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler
     {
         [SerializeField] private Image image;
         [SerializeField] private TMP_Text text;
@@ -23,6 +23,7 @@ namespace Grids
         [SerializeField] private Image bottomLink;
         
         [SerializeField] private Image backlight;
+        [SerializeField] private Image backlight2;
         
         [SerializeField] private GameObject selection;
         
@@ -110,30 +111,31 @@ namespace Grids
                 }
                 
                 backlight.gameObject.SetActive(value == BlockState.FilledNewPath);
+                backlight2.gameObject.SetActive(value == BlockState.FilledNew);
 
                 var bodyColor = bodyColorPalette.GetColor(value);
                 
-                if (value == BlockState.Filled)
+                /*if (value == BlockState.Filled)
                 {
                     var v = Random.insideUnitSphere * 0.1f;
                     var r = Mathf.Clamp01(bodyColor.r + v.x);
                     var g = Mathf.Clamp01(bodyColor.g + v.y);
                     var b = Mathf.Clamp01(bodyColor.b + v.z);
                     bodyColor = new Color(r, g, b);
-                }
+                }*/
 
                 const float changeColorTime = 0.2f;
                 
-                _links.Values.ToList().ForEach(l => l.DOColor(bodyColor, changeColorTime));
-                //_links.Values.ToList().ForEach(l => l.color = bodyColor);
+                //_links.Values.ToList().ForEach(l => l.DOColor(bodyColor, changeColorTime));
+                _links.Values.ToList().ForEach(l => l.color = bodyColor);
                 
-                image.DOColor(bodyColor, changeColorTime);
-                //image.color = bodyColor;
+                //image.DOColor(bodyColor, changeColorTime);
+                image.color = bodyColor;
 
                 var textColor = textColorPalette.GetColor(value);
                 
-                text.DOColor(textColor, changeColorTime);
-                //text.color = textColor;
+                //text.DOColor(textColor, changeColorTime);
+                text.color = textColor;
 
                 _state = value;
             }
@@ -310,7 +312,7 @@ namespace Grids
             }
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public void OnPointerDown(PointerEventData eventData)
         {
             if (_gridController.Flag)
             {
@@ -402,6 +404,51 @@ namespace Grids
                         {
                             _activeLink.gameObject.SetActive(false);
                             _activeLink = null;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!_gridController.Drag || _gridController.Path.Count == 0)
+            {
+                return;
+            }
+
+            switch (State)
+            {
+                case BlockState.Filled:
+                    if (_gridController.TryAddToPath(this))
+                    {
+                        State = BlockState.FilledPath;
+                        if (_gridController.TryGetAntiDirection(out var antiDirection))
+                        {
+                            _activeLink = _links[antiDirection];
+                            _activeLink.gameObject.SetActive(true);
+                        }
+                    }
+                    break;
+                case BlockState.FilledNew:
+                    if (_gridController.TryAddToPath(this))
+                    {
+                        State = BlockState.FilledNewPath;
+                        if (_gridController.TryGetAntiDirection(out var antiDirection))
+                        {
+                            _activeLink = _links[antiDirection];
+                            _activeLink.gameObject.SetActive(true);
+                        }
+                    }
+                    break;
+                case BlockState.FilledPath:
+                case BlockState.FilledNewPath:
+                    if (_gridController.Path.Count > 1 && this == _gridController.Path[^2])
+                    {
+                        var last = _gridController.Path.Last();
+                        if (_gridController.TryRemoveFromPath(last))
+                        {
+                            last.DePath();
                         }
                     }
                     break;

@@ -44,13 +44,15 @@ namespace Themes
             panelCg.alpha = 0;
 
             var startPosition = _panelPosition + Vector2.down * 1000;
-            panel.anchoredPosition = startPosition;
+            //panel.anchoredPosition = startPosition;
+            panel.localScale = Vector3.zero;
             
             _fadeSequence = DOTween.Sequence();
             
             _fadeSequence.Append(backgroundCg.DOFade(1, showDuration));
             _fadeSequence.Join(panelCg.DOFade(1, showDuration));
-            _fadeSequence.Join(panel.DOAnchorPos(_panelPosition, showDuration));
+            //_fadeSequence.Join(panel.DOAnchorPos(_panelPosition, showDuration));
+            _fadeSequence.Join(panel.DOScale(1, showDuration));
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();
         }
@@ -63,13 +65,15 @@ namespace Themes
             panelCg.alpha = 1;
             
             var endPosition = _panelPosition + Vector2.down * 1000;
-            panel.anchoredPosition = _panelPosition;
+            //panel.anchoredPosition = _panelPosition;
+            panel.localScale = Vector3.one;
             
             _fadeSequence = DOTween.Sequence();
             
             _fadeSequence.Append(backgroundCg.DOFade(0, showDuration));
             _fadeSequence.Join(panelCg.DOFade(0, showDuration));
-            _fadeSequence.Join(panel.DOAnchorPos(endPosition, showDuration));
+            //_fadeSequence.Join(panel.DOAnchorPos(endPosition, showDuration));
+            _fadeSequence.Join(panel.DOScale(0, showDuration));
             _fadeSequence.OnComplete(Close);
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();

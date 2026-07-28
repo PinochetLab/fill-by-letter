@@ -35,6 +35,7 @@ namespace DI
         [SerializeField] private ThemeController themeController;
         [SerializeField] private ThemeTutorialBoard themeTutorialBoard;
         [SerializeField] private TreasureBoard treasureBoard;
+        [SerializeField] private WordMiniBoard wordMiniBoard;
 
         public override void InstallBindings()
         {
@@ -59,6 +60,7 @@ namespace DI
             Container.Bind<ThemeController>().FromInstance(themeController).AsSingle();
             Container.Bind<ThemeTutorialBoard>().FromInstance(themeTutorialBoard).AsSingle();
             Container.Bind<TreasureBoard>().FromInstance(treasureBoard).AsSingle();
+            Container.Bind<WordMiniBoard>().FromInstance(wordMiniBoard).AsSingle();
         }
     }
 }

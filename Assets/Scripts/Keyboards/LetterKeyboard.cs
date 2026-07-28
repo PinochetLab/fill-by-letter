@@ -34,6 +34,10 @@ namespace Keyboards
 
         public void Show()
         {
+            if (grid.activeSelf)
+            {
+                return;
+            }
             _showSequence.Kill();
             
             SetInteractable(true);
@@ -44,11 +48,16 @@ namespace Keyboards
 
             _showSequence = DOTween.Sequence();
             _showSequence.Append(gridRt.DOAnchorPosY(0, showDuration));
+            _showSequence.SetUpdate(true);
             _showSequence.Play();
         }
 
         public void Hide()
         {
+            if (!grid.activeSelf)
+            {
+                return;
+            }
             _showSequence.Kill();
             
             var height = gridRt.rect.height;
@@ -56,6 +65,8 @@ namespace Keyboards
 
             _showSequence = DOTween.Sequence();
             _showSequence.Append(gridRt.DOAnchorPosY(-height, showDuration));
+            _showSequence.OnComplete(() => SetInteractable(false));
+            _showSequence.SetUpdate(true);
             _showSequence.Play();
         }
 

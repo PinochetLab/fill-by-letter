@@ -20,7 +20,6 @@ namespace Progress
         [SerializeField] private Slider scoreSlider;
         [SerializeField] private Slider firstScoreGoalSlider;
         [SerializeField] private Slider secondScoreGoalSlider;
-        [SerializeField] private TMP_Text maxScoreText;
         
         [SerializeField] private RectTransform firstScoreGoalChest;
         [SerializeField] private RectTransform secondScoreGoalChest;
@@ -55,19 +54,19 @@ namespace Progress
             _firstScoreGoal = level.FirstScoreGoal;
             _secondScoreGoal = level.SecondScoreGoal;
 
-            _speed = _secondScoreGoal;
+            var maxValue = _secondScoreGoal * 1.3f;
 
-            maxScoreText.text = _secondScoreGoal.ToString();
+            _speed = _secondScoreGoal;
             
-            scoreSlider.maxValue = _secondScoreGoal;
+            scoreSlider.maxValue = maxValue;
 
             _score = 0;
             UpdateScore();
             
-            firstScoreGoalSlider.maxValue = _secondScoreGoal;
+            firstScoreGoalSlider.maxValue = maxValue;
             firstScoreGoalSlider.value = _firstScoreGoal;
             
-            secondScoreGoalSlider.maxValue = _secondScoreGoal;
+            secondScoreGoalSlider.maxValue = maxValue;
             secondScoreGoalSlider.value = _secondScoreGoal;
             
             blocks.ForEach(b => b.gameObject.SetActive(false));

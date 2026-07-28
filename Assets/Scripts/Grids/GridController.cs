@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using AIs;
 using Bonuses;
-using DI;
 using Errors;
 using JetBrains.Annotations;
 using Keyboards;
@@ -43,6 +41,7 @@ namespace Grids
         [Inject] private FlagButton _flagButton;
         
         [Inject] private ThemeController _themeController;
+        [Inject] private WordMiniBoard _wordMiniBoard;
         
         [Inject] private DiContainer _container;
 
@@ -56,15 +55,18 @@ namespace Grids
         private ErrorType _errorTypeWordDoesNotContainNewLetter;
 
         public bool CanPath { get; private set; }
-        
+
+        public List<LetterBlock> Path { get; } = new ();
+
         private int _size;
         private LetterBlock[,] _grid;
         private Solver _solver;
+        public bool Drag { get; private set; }
+
+        private bool _pathChanged;
         
         private char? HintedLetter { get; set; }
         private Vector2Int? HintedPos { get; set; }
-
-        private List<LetterBlock> _path = new ();
 
         private LetterBlock _selectedBlock;
 
@@ -108,6 +110,7 @@ namespace Grids
 
         private void Awake()
         {
+            Application.targetFrameRate = 300;
             _solver = _container.Instantiate<Solver>();
             BuildGrid(level.Size);
             SetWord(level.Word);
@@ -209,7 +212,7 @@ namespace Grids
 
         public void SelectBlock(LetterBlock block)
         {
-            if (_path != null)
+            if (Path != null)
             {
                 ClearPath();
             }
@@ -274,7 +277,7 @@ namespace Grids
             {
                 _selectedBlock.SetLetter(letter);
                 _selectedBlock.State = BlockState.FilledNew;
-                _path.Clear();
+                Path.Clear();
                 CanPath = true;
                 _letterKeyboard.Hide();
                 _wordBoard.Show();
@@ -283,16 +286,29 @@ namespace Grids
 
         public bool TryAddToPath(LetterBlock block)
         {
-            if (_path.Count != 0 && (!AreNear(_path.Last(), block) || _path.Contains(block)))
+            if (Path.Count == 0)
+            {
+                _pathChanged = false;
+                Drag = true;
+            }
+            
+            if (Path.Count != 0 && (!AreNear(Path.Last(), block) || Path.Contains(block)))
             {
                 return false;
             }
             
+            if (Path.Count > 0)
+            {
+                _pathChanged = true;
+            }
+            
+            _wordMiniBoard.AddLetter(block.Letter);
             _trieWordChecker.AddLetter(block.Letter);
-            _path.Add(block);
+            Path.Add(block);
             _wordBoard.AddLetter(block.Letter);
             gridLayoutGroup.enabled = false;
             block.transform.SetAsFirstSibling();
+            
             if (HintedPos != null)
             {
                 var p = HintedPos.Value;
@@ -301,22 +317,37 @@ namespace Grids
             return true;
 
         }
+
+        private void Update()
+        {
+            if (Drag && Input.GetMouseButtonUp(0))
+            {
+                Drag = false;
+                
+                if (_pathChanged)
+                {
+                    CompletePath();
+                    ClearPath();
+                }
+            }
+        }
         
         public bool TryRemoveFromPath(LetterBlock block)
         {
-            if (_path.Count == 0)
+            if (Path.Count == 0)
             {
                 return false;
             }
 
-            if (block != _path.Last()) return false;
+            if (block != Path.Last()) return false;
             
             _trieWordChecker.RemoveLetter();
+            _wordMiniBoard.RemoveLetter();
             _wordBoard.RemoveLetter();
             
-            _path.RemoveAt(_path.Count - 1);
+            Path.RemoveAt(Path.Count - 1);
 
-            if (_path.Count == 0)
+            if (Path.Count == 0)
             {
                 //ClearPath();
                 //DeselectBlock();
@@ -331,14 +362,15 @@ namespace Grids
             _trieWordChecker.Reset();
             
             _wordBoard.Clear();
+            _wordMiniBoard.Clear();
             _wordBoard.Hide();
             
-            foreach (var b in _path)
+            foreach (var b in Path)
             {
                 b.DePath();
             }
             
-            _path.Clear();
+            Path.Clear();
         }
 
         public void OnClearWord()
@@ -350,13 +382,13 @@ namespace Grids
 
         public bool TryGetAntiDirection(out Vector2Int antiDirection)
         {
-            if (_path.Count < 2)
+            if (Path.Count < 2)
             {
                 antiDirection = Vector2Int.zero;
                 return false;
             }
             
-            antiDirection = new Vector2Int(_path[^2].X - _path[^1].X, _path[^2].Y - _path[^1].Y);
+            antiDirection = new Vector2Int(Path[^2].X - Path[^1].X, Path[^2].Y - Path[^1].Y);
             return true;
         }
         
@@ -421,12 +453,12 @@ namespace Grids
 
         private bool PathContainsNewLetter()
         {
-            return _path.Contains(_selectedBlock);
+            return Path.Contains(_selectedBlock);
         }
 
         public void CompletePath()
         {
-            var word = string.Join("", _path.Select(b => b.Letter.ToString()));
+            var word = string.Join("", Path.Select(b => b.Letter.ToString()));
 
             if (!PathContainsNewLetter())
             {
@@ -448,9 +480,11 @@ namespace Grids
                 return;
             }
             
-            var letterIndex = _path.IndexOf(_selectedBlock);
+            var letterIndex = Path.IndexOf(_selectedBlock);
 
             var score = _themeController.GetScore(word);
+            
+            _wordMiniBoard.Send();
             
             _progressBoard.MakeWord(word, score, letterIndex);
             
