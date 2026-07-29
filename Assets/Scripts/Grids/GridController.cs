@@ -33,12 +33,12 @@ namespace Grids
         [Inject] private WordHinter _wordHinter;
         [Inject] private ErrorBoard _errorBoard;
         
-        [Inject] private HintLetterButton _hintLetterButton;
-        [Inject] private HintLetterPlaceButton _hintLetterPlaceButton;
-        [Inject] private HintWordButton _hintWordButton;
-        [Inject] private ReplaceButton _replaceButton;
-        [Inject] private EraseButton _eraseButton;
-        [Inject] private FlagButton _flagButton;
+        [Inject(Id = BonusType.Letter)] private BonusButton _letterButton;
+        [Inject(Id = BonusType.Cell)] private BonusButton _cellButton;
+        [Inject(Id = BonusType.Word)] private BonusButton _wordButton;
+        [Inject(Id = BonusType.Replace)] private BonusButton _replaceButton;
+        [Inject(Id = BonusType.Erase)] private BonusButton _eraseButton;
+        [Inject(Id = BonusType.Flag)] private BonusButton _flagButton;
         
         [Inject] private ThemeController _themeController;
         [Inject] private WordMiniBoard _wordMiniBoard;
@@ -215,6 +215,7 @@ namespace Grids
             if (Path != null)
             {
                 ClearPath();
+                _wordBoard.Hide();
             }
             
             if (_selectedBlock)
@@ -339,7 +340,10 @@ namespace Grids
                 return false;
             }
 
-            if (block != Path.Last()) return false;
+            if (block != Path.Last())
+            {
+                return false;
+            }
             
             _trieWordChecker.RemoveLetter();
             _wordMiniBoard.RemoveLetter();
@@ -363,7 +367,6 @@ namespace Grids
             
             _wordBoard.Clear();
             _wordMiniBoard.Clear();
-            _wordBoard.Hide();
             
             foreach (var b in Path)
             {
@@ -376,6 +379,7 @@ namespace Grids
         public void OnClearWord()
         {
             ClearPath();
+            _wordBoard.Hide();
             _selectedBlock.State = BlockState.EmptyAvailable;
             DeselectBlock();
         }
@@ -491,6 +495,7 @@ namespace Grids
             _wordHinter.StopHint();
             
             ClearPath();
+            _wordBoard.Hide();
             _selectedBlock.State = BlockState.Filled;
             _selectedBlock.Complete();
 
@@ -510,12 +515,12 @@ namespace Grids
 
         private void SwitchOffBonuses()
         {
-            _hintLetterButton.SwitchOff();
-            _hintLetterPlaceButton.SwitchOff();
-            _hintWordButton.SwitchOff();
+            _letterButton.SwitchOff();
+            _cellButton.SwitchOff();
+            _wordButton.SwitchOff();
             
             StopHintLetter();
-            StopHintLetterPlace();
+            StopHintCell();
             StopHintWord();
         }
         
@@ -563,7 +568,7 @@ namespace Grids
             _flagButton.SetInteractable(true);
         }
         
-        public void StartHintLetterPlace()
+        public void StartHintCell()
         {
             _replaceButton.SetInteractable(false);
             _eraseButton.SetInteractable(false);
@@ -591,7 +596,7 @@ namespace Grids
             _grid[p.x, p.y].StartHint();
         }
 
-        public void StopHintLetterPlace()
+        public void StopHintCell()
         {
             var p = Answer.LetterPos;
 
@@ -639,9 +644,9 @@ namespace Grids
             
             _eraseButton.SetInteractable(false);
             _flagButton.SetInteractable(false);
-            _hintLetterButton.SetInteractable(false);
-            _hintLetterPlaceButton.SetInteractable(false);
-            _hintWordButton.SetInteractable(false);
+            _letterButton.SetInteractable(false);
+            _cellButton.SetInteractable(false);
+            _wordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -676,9 +681,9 @@ namespace Grids
             
             _eraseButton.SetInteractable(true);
             _flagButton.SetInteractable(true);
-            _hintLetterButton.SetInteractable(true);
-            _hintLetterPlaceButton.SetInteractable(true);
-            _hintWordButton.SetInteractable(true);
+            _letterButton.SetInteractable(true);
+            _cellButton.SetInteractable(true);
+            _wordButton.SetInteractable(true);
         }
 
         public void ChooseReplace(LetterBlock block)
@@ -702,9 +707,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(false);
             _flagButton.SetInteractable(false);
-            _hintLetterButton.SetInteractable(false);
-            _hintLetterPlaceButton.SetInteractable(false);
-            _hintWordButton.SetInteractable(false);
+            _letterButton.SetInteractable(false);
+            _cellButton.SetInteractable(false);
+            _wordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -737,9 +742,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(true);
             _flagButton.SetInteractable(true);
-            _hintLetterButton.SetInteractable(true);
-            _hintLetterPlaceButton.SetInteractable(true);
-            _hintWordButton.SetInteractable(true);
+            _letterButton.SetInteractable(true);
+            _cellButton.SetInteractable(true);
+            _wordButton.SetInteractable(true);
         }
 
         public void ChooseErase(LetterBlock block)
@@ -759,9 +764,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(false);
             _eraseButton.SetInteractable(false);
-            _hintLetterButton.SetInteractable(false);
-            _hintLetterPlaceButton.SetInteractable(false);
-            _hintWordButton.SetInteractable(false);
+            _letterButton.SetInteractable(false);
+            _cellButton.SetInteractable(false);
+            _wordButton.SetInteractable(false);
             
             foreach (var block in _grid)
             {
@@ -794,9 +799,9 @@ namespace Grids
             
             _replaceButton.SetInteractable(true);
             _eraseButton.SetInteractable(true);
-            _hintLetterButton.SetInteractable(true);
-            _hintLetterPlaceButton.SetInteractable(true);
-            _hintWordButton.SetInteractable(true);
+            _letterButton.SetInteractable(true);
+            _cellButton.SetInteractable(true);
+            _wordButton.SetInteractable(true);
         }
 
         public void ChooseFlag(LetterBlock block)

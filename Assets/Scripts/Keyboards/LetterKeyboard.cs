@@ -8,64 +8,103 @@ namespace Keyboards
     public class LetterKeyboard : MonoBehaviour
     {
         [SerializeField] private List<LetterKey> allKeys;
-        [SerializeField] private GameObject grid;
+        [SerializeField] private GameObject keyboard;
+        [SerializeField] private List<CanvasGroup> canvasGroups;
+        [SerializeField] private RectTransform keyboardRt;
         [SerializeField] private RectTransform gridRt;
 
         [SerializeField] private float showDuration = 0.2f;
         [SerializeField] private float hideDuration = 0.2f;
 
         private const string Alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+        private const string Wovels = "аеёиоуыэюя";
 
         private List<LetterKey> _keys;
 
+        private bool _show;
+        private float _height;
+
         private Sequence _showSequence;
 
-        private void Start()
+        private void Awake()
         {
             SetAlphabet(Alphabet);
             SetInteractable(false);
+            _height = keyboardRt.rect.height;
+            gridRt.anchoredPosition = Vector2.down * _height;
+            canvasGroups.ForEach(c => c.alpha = 0);
+            SwitchOff();
         }
 
         private void SetInteractable(bool interactable)
         {
-            grid.SetActive(interactable);
             _keys.ForEach(k => k.SetInteractable(interactable));
+        }
+
+        private void SwitchOn()
+        {
+            keyboard.SetActive(true);
+        }
+        
+        private void SwitchOff()
+        {
+            keyboard.SetActive(false);
         }
 
         public void Show()
         {
-            if (grid.activeSelf)
+            if (_show)
             {
                 return;
             }
+            
             _showSequence.Kill();
             
-            SetInteractable(true);
-            
-            var height = gridRt.rect.height;
-            var startPos = Vector2.down * height;
-            gridRt.anchoredPosition = startPos;
+            SwitchOn();
+
+            _show = true;
+
+            var deltaHeight = Mathf.Abs(gridRt.anchoredPosition.y);
+            var duration =  showDuration * (deltaHeight / _height);
 
             _showSequence = DOTween.Sequence();
-            _showSequence.Append(gridRt.DOAnchorPosY(0, showDuration));
+            _showSequence.Append(gridRt.DOAnchorPosY(0, duration));
+            
+            foreach (var canvasGroup in canvasGroups)
+            {
+                _showSequence.Join(canvasGroup.DOFade(1, duration));
+            }
+            
+            _showSequence.OnComplete(() => SetInteractable(true));
             _showSequence.SetUpdate(true);
             _showSequence.Play();
         }
 
         public void Hide()
         {
-            if (!grid.activeSelf)
+            if (!_show)
             {
                 return;
             }
-            _showSequence.Kill();
+
+            SetInteractable(false);
             
-            var height = gridRt.rect.height;
-            gridRt.anchoredPosition = Vector2.zero;
+            _showSequence.Kill();
+
+            _show = false;
+            
+            var deltaHeight = Mathf.Abs(_height + gridRt.anchoredPosition.y);
+            var duration =  showDuration * (deltaHeight / _height);
 
             _showSequence = DOTween.Sequence();
-            _showSequence.Append(gridRt.DOAnchorPosY(-height, showDuration));
-            _showSequence.OnComplete(() => SetInteractable(false));
+            _showSequence.Append(gridRt.DOAnchorPosY(-_height, duration));
+            
+            foreach (var canvasGroup in canvasGroups)
+            {
+                _showSequence.Join(canvasGroup.DOFade(0, duration));
+            }
+            
+            _showSequence.OnComplete(SwitchOff);
             _showSequence.SetUpdate(true);
             _showSequence.Play();
         }
@@ -78,7 +117,8 @@ namespace Keyboards
             {
                 if (i < alphabet.Length)
                 {
-                    allKeys[i].SetLetter(alphabet[i]);
+                    var letter = alphabet[i];
+                    allKeys[i].SetLetter(letter, Wovels.Contains(letter));
                     allKeys[i].gameObject.SetActive(true);
                 }
                 else

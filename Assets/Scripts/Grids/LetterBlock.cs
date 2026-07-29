@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 
 namespace Grids
 {
-    public class LetterBlock : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler
+    public class LetterBlock : MonoBehaviour, IPointerDownHandler, IPointerClickHandler, IPointerEnterHandler
     {
         [SerializeField] private Image image;
         [SerializeField] private TMP_Text text;
@@ -66,6 +66,10 @@ namespace Grids
 
         public int X { get; private set; }
         public int Y { get; private set; }
+
+        private bool _isDown;
+        private Vector2 _lastMousePos;
+        private float _mousePathDistance;
         
         private char? HintedLetter { get; set; }
         
@@ -314,6 +318,74 @@ namespace Grids
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            if (!_gridController.CanPath || _gridController.Path.Count > 0)
+            {
+                return;
+            }
+            
+            switch (State)
+            {
+                case BlockState.Filled:
+                    if (_gridController.TryAddToPath(this))
+                    {
+                        State = BlockState.FilledPath;
+
+                        _isDown = true;
+                        _lastMousePos = Input.mousePosition;
+                        _mousePathDistance = 0;
+                        
+                        if (_gridController.TryGetAntiDirection(out var antiDirection))
+                        {
+                            _activeLink = _links[antiDirection];
+                            _activeLink.gameObject.SetActive(true);
+                        }
+                    }
+                    break;
+                case BlockState.FilledNew:
+                    if (_gridController.TryAddToPath(this))
+                    {
+                        State = BlockState.FilledNewPath;
+                        
+                        _isDown = true;
+                        _lastMousePos = Input.mousePosition;
+                        _mousePathDistance = 0;
+                        
+                        if (_gridController.TryGetAntiDirection(out var antiDirection))
+                        {
+                            _activeLink = _links[antiDirection];
+                            _activeLink.gameObject.SetActive(true);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private void Update()
+        {
+            if (!_isDown)
+            {
+                return;
+            }
+            
+            if (!Input.GetMouseButtonUp(0))
+            {
+                var currentPos = Input.mousePosition;
+                _mousePathDistance += Vector2.Distance(_lastMousePos, currentPos);
+                _lastMousePos =currentPos;
+            }
+            else
+            {
+                _isDown = false;
+            }
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (X == 2 && Y == 2)
+            {
+                Debug.Log($"Try Click!");
+            }
+            
             if (_gridController.Flag)
             {
                 switch (State)
@@ -361,7 +433,7 @@ namespace Grids
                     _gridController.DeselectBlock();
                     State = BlockState.EmptyAvailable;
                     break;
-                case BlockState.Filled when _gridController.CanPath:
+                case BlockState.Filled when _gridController.CanPath && _gridController.Path.Count > 0:
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledPath;
@@ -373,7 +445,7 @@ namespace Grids
                         }
                     }
                     break;
-                case BlockState.FilledNew when _gridController.CanPath:
+                case BlockState.FilledNew when _gridController.CanPath && _gridController.Path.Count > 0:
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledNewPath;
@@ -385,7 +457,7 @@ namespace Grids
                         }
                     }
                     break;
-                case BlockState.FilledPath when _gridController.CanPath:
+                case BlockState.FilledPath when _gridController.CanPath && (!_isDown || _mousePathDistance > 10):
                     if (_gridController.TryRemoveFromPath(this))
                     {
                         State = BlockState.Filled;
@@ -396,7 +468,7 @@ namespace Grids
                         }
                     }
                     break;
-                case BlockState.FilledNewPath when _gridController.CanPath:
+                case BlockState.FilledNewPath when _gridController.CanPath && (!_isDown || _mousePathDistance > 10):
                     if (_gridController.TryRemoveFromPath(this))
                     {
                         State = BlockState.FilledNew;

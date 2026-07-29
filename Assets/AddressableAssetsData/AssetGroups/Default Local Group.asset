@@ -15,6 +15,16 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 7d1a4d04ba4a64541b303ff194ef8d23
   m_SerializeEntries:
+  - m_GUID: 21da0c66072b1db47ae7134af1dee242
+    m_Address: Assets/Sprites/UI/Bonuses/Pencil.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22bc44d3e6e3abc4ebb21166b94a7e83
+    m_Address: Assets/Sprites/UI/Bonuses/Eraser.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f88edbfe9664d943b81837bb008fd76
     m_Address: Assets/Dictionaries/Trie/russian.json
     m_ReadOnly: 0
@@ -22,6 +32,26 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6c8f2ee1f172a7349b4ad2c135260a28
     m_Address: Assets/Dictionaries/HashSet/animals.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6eb071ac2e7278d4498ab59eb12ae91f
+    m_Address: Assets/Sprites/UI/Bonuses/Book.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 769f2241930dc904882f12c7a3f5c62c
+    m_Address: Assets/Sprites/UI/Bonuses/Flag.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c1de2e0d86366c4a8364a2dc28f1a2f
+    m_Address: Assets/Sprites/UI/Bonuses/Arrow.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2b8727c212cf0148aa82a08a892af9a
+    m_Address: Assets/Sprites/UI/Bonuses/Loupe.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

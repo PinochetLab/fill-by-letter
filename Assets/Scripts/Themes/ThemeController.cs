@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -12,6 +11,7 @@ namespace Themes
 {
     public class ThemeController : MonoBehaviour, IPointerClickHandler
     {
+        [Header("Theme Settings")]
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private Image themeImage;
         [SerializeField] private TMP_Text multiplierText;
@@ -80,7 +80,7 @@ namespace Themes
 
         public int GetScore(string word)
         {
-            if (_theme == null)
+            if (!_theme)
             {
                 return word.Length;
             }
@@ -95,7 +95,8 @@ namespace Themes
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            _themeTutorialBoard.Show(_theme);
+            _themeTutorialBoard.Show();
+            _themeTutorialBoard.SetTheme(_theme);
         }
     }
 }
