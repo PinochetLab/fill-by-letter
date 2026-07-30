@@ -1,4 +1,6 @@
-﻿using DG.Tweening;
+﻿using System;
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 namespace Boards
@@ -6,65 +8,97 @@ namespace Boards
     public abstract class AbstractBoard : MonoBehaviour
     {
         [Header("Appear Settings")]
-        [SerializeField] private GameObject body;
-        [SerializeField] private Transform panel;
-        [SerializeField] private CanvasGroup backgroundCg;
-        [SerializeField] private CanvasGroup panelCg;
-        [SerializeField] private float showDuration = 0.5f;
-        [SerializeField] private float hideDuration = 0.5f;
+        [SerializeField] private GameObject screen;
+        [SerializeField] private Transform board;
+        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField] private float duration = 0.5f;
+
+        private static readonly Queue<AbstractBoard> BoardQueue = new ();
+        private static readonly Queue<object> ParamQueue = new ();
+
+        private bool _isShown;
+        
+        
         
         private Sequence _fadeSequence;
         
         private void Awake()
         {
-            Close();
+            EndHiding();
         }
 
-        public void Show()
+        public void ShowWithParam(object param = null)
         {
-            body.SetActive(true);
+            //Debug.Log($"Showing param: {param} for {this}");
+            ParamQueue.Enqueue(param);
+            BoardQueue.Enqueue(this);
+        }
+
+        private void Update()
+        {
+            if (!_isShown && BoardQueue.Count > 0 && BoardQueue.Peek() == this)
+            {
+                //Debug.Log($"this: {this}, BoardQueue.Peek(): {BoardQueue.Peek()}, ParamQueue.Peek(): {ParamQueue.Peek()}");
+                var param =  ParamQueue.Dequeue();
+                _isShown = true;
+                ProcessParam(param);
+                Show();
+            }
+        }
+
+        protected abstract void ProcessParam(object param);
+        
+        private void Show()
+        {
+            screen.SetActive(true);
             
             _fadeSequence.Kill();
             
             Time.timeScale = 0;
 
-            backgroundCg.alpha = 0;
-            panelCg.alpha = 0;
+            canvasGroup.alpha = 0;
 
-            panel.localScale = Vector3.zero;
+            board.localScale = Vector3.zero;
             
             _fadeSequence = DOTween.Sequence();
             
-            _fadeSequence.Append(backgroundCg.DOFade(1, showDuration));
-            _fadeSequence.Join(panelCg.DOFade(1, showDuration));
-            _fadeSequence.Join(panel.DOScale(1, showDuration));
+            _fadeSequence.Append(board.DOScale(1, duration));
+            _fadeSequence.Join(canvasGroup.DOFade(1, duration));
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();
         }
 
-        public void Hide()
+        protected void Hide()
         {
             _fadeSequence.Kill();
             
-            backgroundCg.alpha = 1;
-            panelCg.alpha = 1;
+            canvasGroup.alpha = 1;
             
-            panel.localScale = Vector3.one;
+            board.localScale = Vector3.one;
             
             _fadeSequence = DOTween.Sequence();
             
-            _fadeSequence.Append(backgroundCg.DOFade(0, showDuration));
-            _fadeSequence.Join(panelCg.DOFade(0, showDuration));
-            _fadeSequence.Join(panel.DOScale(0, showDuration));
-            _fadeSequence.OnComplete(Close);
+            _fadeSequence.Append(board.DOScale(0, duration));
+            _fadeSequence.Join(canvasGroup.DOFade(0, duration));
+            _fadeSequence.OnComplete(EndHiding);
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();
         }
-        
-        private void Close()
+
+        public void Close()
         {
+            Hide();
+        }
+        
+        private void EndHiding()
+        {
+            _isShown = false;
+            if (BoardQueue.Count > 0)
+            {
+                BoardQueue.Dequeue();
+            }
             Time.timeScale = 1;
-            body.SetActive(false);
+            screen.SetActive(false);
         }
     }
 }

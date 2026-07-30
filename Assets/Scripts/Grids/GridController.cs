@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using AIs;
 using Bonuses;
+using Cysharp.Threading.Tasks;
 using Errors;
 using JetBrains.Annotations;
 using Keyboards;
 using Levels;
 using Progress;
 using Themes;
+using Boards;
 using UnityEngine;
 using UnityEngine.UI;
 using WordBoards;
@@ -43,6 +45,8 @@ namespace Grids
         [Inject] private ThemeController _themeController;
         [Inject] private WordMiniBoard _wordMiniBoard;
         
+        [Inject] private CellTutorialBoard _cellTutorialBoard;
+        
         [Inject] private DiContainer _container;
 
         [Inject(Id = "WordIsAlreadyCollected")]
@@ -61,6 +65,8 @@ namespace Grids
         private int _size;
         private LetterBlock[,] _grid;
         private Solver _solver;
+
+        private HashSet<CellType> _types = new ();
         public bool Drag { get; private set; }
 
         private bool _pathChanged;
@@ -110,8 +116,28 @@ namespace Grids
 
         private void Awake()
         {
+            //Debug.Log("lol");
+            //SetLevel().Forget();
+            SetLevel();
+        }
+
+        public void SetLevel()
+        {
             Application.targetFrameRate = 300;
             _solver = _container.Instantiate<Solver>();
+
+            if (level.TimeCoins.Count > 0 && !_types.Contains(CellType.TimeCoin))
+            {
+                _types.Add(CellType.TimeCoin);
+                _cellTutorialBoard.ShowWithParam(CellType.TimeCoin);
+            }
+            
+            if (level.LetterCoins.Count > 0 && !_types.Contains(CellType.LetterCoin))
+            {
+                _types.Add(CellType.LetterCoin);
+                _cellTutorialBoard.ShowWithParam(CellType.LetterCoin);
+            }
+            
             BuildGrid(level.Size);
             SetWord(level.Word);
             _progressBoard.SetUp(level);
@@ -198,15 +224,16 @@ namespace Grids
                 }
             }
 
-            foreach (var cell in level.TimeCoins)
+            foreach (var timeCoin in level.TimeCoins)
             {
-                _grid[cell.x, cell.y].SetTimer();
+                var cell = timeCoin.Position;
+                _grid[cell.x, cell.y].SetTimer(timeCoin.Duration);
             }
             
-            foreach (var letterCoinInfo in level.LetterCoins)
+            foreach (var letterCoin in level.LetterCoins)
             {
-                var pos = letterCoinInfo.Position;
-                _grid[pos.x, pos.y].SetSpecialLetter(letterCoinInfo.Letter);
+                var pos = letterCoin.Position;
+                _grid[pos.x, pos.y].SetSpecialLetter(letterCoin.Letter);
             }
         }
 

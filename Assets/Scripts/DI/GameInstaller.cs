@@ -5,6 +5,7 @@ using Keyboards;
 using Money;
 using Progress;
 using Themes;
+using Boards;
 using UnityEngine;
 using WordBoards;
 using Words;
@@ -30,6 +31,8 @@ namespace DI
         [SerializeField] private ThemeTutorialBoard themeTutorialBoard;
         [SerializeField] private TreasureBoard treasureBoard;
         [SerializeField] private WordMiniBoard wordMiniBoard;
+        [SerializeField] private CellTutorialBoard cellTutorialBoard;
+        [SerializeField] private ShopBoard shopBoard;
         
         [Header("Bonus Buttons")]
         [SerializeField] private BonusButton letterButton;
@@ -57,6 +60,8 @@ namespace DI
             Container.Bind<ThemeTutorialBoard>().FromInstance(themeTutorialBoard).AsSingle();
             Container.Bind<TreasureBoard>().FromInstance(treasureBoard).AsSingle();
             Container.Bind<WordMiniBoard>().FromInstance(wordMiniBoard).AsSingle();
+            Container.Bind<CellTutorialBoard>().FromInstance(cellTutorialBoard).AsSingle();
+            Container.Bind<ShopBoard>().FromInstance(shopBoard).AsSingle();
 
             Container.Bind<BonusButton>().WithId(BonusType.Letter).FromInstance(letterButton);
             Container.Bind<BonusButton>().WithId(BonusType.Cell).FromInstance(cellButton);

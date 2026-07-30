@@ -17,8 +17,17 @@ namespace AIs
         [Inject] private ProgressBoard _progressBoard;
 
         private const string Alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+        
+        private SolverTrie _solverTrie;
 
-        private SolverTrie Trie => _trieGlossaryLoader.SolverTrie;
+        private SolverTrie Trie
+        {
+            get
+            {
+                _solverTrie ??= _trieGlossaryLoader.SolverTrie;
+                return _solverTrie;
+            }
+        }
 
         public Answer FindBestWord(char?[,] letters, List<Vector2Int> availablePositions)
         {
@@ -40,18 +49,8 @@ namespace AIs
                 foreach (var letter in Alphabet)
                 {
                     letters[position.x, position.y] = letter;
-                    
-                    /*if (letter == 'ы' && position == new Vector2Int(8, 5))
-                    {
-                        Debug.Log("CHECHING ЫЫЫЫ");
-                    }*/
 
                     var path = FindBestPathWithNewLetter(letters, directions, position, letter == 'ы' && position == new Vector2Int(8, 5));
-
-                    /*if (letter == 'ы' && position == new Vector2Int(8, 5))
-                    {
-                        Debug.Log("CHECHING ЫЫЫЫ ENDED");
-                    }*/
 
                     if (maxPath is null || (path is not null && path.Count > maxPath.Count))
                     {
@@ -93,11 +92,6 @@ namespace AIs
 
                     var startPos = new Vector2Int(i, j);
 
-                    /*if (print)
-                    {
-                        Debug.Log($"Checking path for: {letter} in {startPos} + ZeroCount: {directions.Cast<Vector2Int>().Count(v => v == Vector2Int.zero)}");
-                    }*/
-
                     var p = print && letter == 'к' && startPos == new Vector2Int(3, 5);
                     
                     var path = FindBestPathWithNewLetter(letters, directions, startPos, newLetterPos, startPos, p);
@@ -128,10 +122,6 @@ namespace AIs
             {
                 return null;
             }
-            
-            var tab = string.Join("", Enumerable.Repeat("  ", depth));
-            
-            //if (print) Debug.Log($"{tab} letter: {letter}");
 
             List<Vector2Int> maxPath = null;
             
@@ -163,10 +153,6 @@ namespace AIs
             if (maxPath is null && Trie.IsTerminal() && (directions[newLetterPos.x, newLetterPos.y] != Vector2.zero || current == newLetterPos))
             {
                 var word = Trie.GetWord();
-                /*if (print)
-                {
-                    Debug.Log($"Checking word: {word}");
-                }*/
                 if (_progressBoard.CanMake(word))
                 {
                     maxPath = new List<Vector2Int>();

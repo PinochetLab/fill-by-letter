@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e7c9e112edab6494982283ec0b3d905e
+guid: 4ff57b59ab31bd241b3b509561c16da6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4951242443818557047
-    second: 248196661026212_0
+      213: -1348462052192599985
+    second: free-icon-money-bag-2953536_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -72,7 +72,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 256
+    maxTextureSize: 512
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 248196661026212_0
+      name: free-icon-money-bag-2953536_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 4
-        width: 1080
-        height: 1083
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 77e54a415c856b440800000000000000
-      internalID: 4951242443818557047
+      spriteID: f4047f178ec494de0800000000000000
+      internalID: -1348462052192599985
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      248196661026212_0: 4951242443818557047
+      free-icon-money-bag-2953536_0: -1348462052192599985
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

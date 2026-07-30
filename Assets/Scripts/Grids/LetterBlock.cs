@@ -70,6 +70,7 @@ namespace Grids
         private bool _isDown;
         private Vector2 _lastMousePos;
         private float _mousePathDistance;
+        private Sequence _appearSequence;
         
         private char? HintedLetter { get; set; }
         
@@ -168,10 +169,8 @@ namespace Grids
             specialLetterText.text = letter.ToString();
         }
 
-        public void SetTimer()
+        public void SetTimer(float duration)
         {
-            var duration = 30f * Mathf.Abs(Y - _gridController.Center);
-            
             timerGameObject.SetActive(true);
 
             timerFilledImage.fillAmount = 1;
@@ -237,9 +236,14 @@ namespace Grids
 
         public void PopUp()
         {
-            transform.DOKill();
+            _appearSequence.Kill();
+            
             transform.localScale = Vector3.zero;
-            transform.DOScale(Vector3.one, 0.2f);
+
+            _appearSequence = DOTween.Sequence();
+            _appearSequence.Append(transform.DOScale(1, 0.2f));
+            _appearSequence.SetUpdate(true);
+            _appearSequence.Play();
         }
 
         public void StopHint()
@@ -291,6 +295,27 @@ namespace Grids
         {
             HintedLetter = null;
             SetLetter('?');
+        }
+
+        public void SetType(CellType type)
+        {
+            timerGameObject.SetActive(false);
+
+            text.text = string.Empty;
+            
+            switch (type)
+            {
+                case CellType.TimeCoin:
+                    timerGameObject.SetActive(true);
+                    timerFilledImage.fillAmount = 0.75f;
+                    break;
+                case CellType.LetterCoin:
+                    specialLetter.SetActive(false);
+                    specialLetterText.text = "б";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
         }
 
         public void DePath()

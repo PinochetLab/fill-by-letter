@@ -13,7 +13,7 @@ namespace WordBoards
         public void SetWord(string word)
         {
             text.text = word;
-            LayoutRebuilder.ForceRebuildLayoutImmediate(textRt);
+            //LayoutRebuilder.ForceRebuildLayoutImmediate(textRt);
             var sizeDelta =  textRt.rect.size;
             sizeDelta.x += 30;
             panelRt.sizeDelta = sizeDelta;

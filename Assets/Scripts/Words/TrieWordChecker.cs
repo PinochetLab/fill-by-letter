@@ -14,10 +14,21 @@ namespace Words
         
         private GameTrie _gameTrie;
 
-        private GameTrie GameTrie => _trieGlossaryLoader.GameTrie;
+        private GameTrie GameTrie
+        {
+            get
+            {
+                _gameTrie ??= _trieGlossaryLoader.GameTrie;
+                return _gameTrie;
+            }
+        }
 
         public void Reset()
         {
+            if (_gameTrie == null)
+            {
+                return;
+            }
             GameTrie.Reset();
         }
 

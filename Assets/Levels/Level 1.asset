@@ -17,11 +17,8 @@ MonoBehaviour:
   firstScoreGoal: 65
   secondScoreGoal: 100
   timeCoins:
-  - {x: 3, y: 1}
-  - {x: 0, y: 1}
-  - {x: 1, y: 1}
-  - {x: 2, y: 1}
-  - {x: 4, y: 1}
+  - position: {x: 0, y: 0}
+    duration: 180
   letterCoins:
   - position: {x: 3, y: 3}
     letter: 1073

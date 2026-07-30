@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d25e39d13cda42cfb1f5fe84fe486227, type: 3}
   m_Name: Setting Installer
   m_EditorClassIdentifier: 
+  errorRankColorPalette: {fileID: 11400000, guid: 5483cbfb1cb7c0342900d3d64207293b, type: 2}
   wordIsAlreadyCollected: {fileID: 11400000, guid: 524a87b91e0afdb40aaafc593d056061, type: 2}
   wordDoesNotExist: {fileID: 11400000, guid: 7689cb45f63d7f442b1e4adb39754011, type: 2}
   wordDoesNotContainNewLetter: {fileID: 11400000, guid: 2899bf1e4f71c1448bc262dcb44cc53d, type: 2}
   tapOnEmptyCellToPutLetter: {fileID: 11400000, guid: 7f88da3dd359ca246b83484807f4cb5b, type: 2}
-  errorRankColorPalette: {fileID: 11400000, guid: 5483cbfb1cb7c0342900d3d64207293b, type: 2}
+  timeCoin: {fileID: 11400000, guid: 10e394985c6e01341aa7741d2378a6d3, type: 2}
+  letterCoin: {fileID: 11400000, guid: 1b057fcb43f86694ea6a4d15ac556e11, type: 2}

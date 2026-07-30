@@ -1,4 +1,5 @@
 ﻿using System;
+using Boards;
 using TMPro;
 using UnityEngine;
 using Zenject;
@@ -11,6 +12,7 @@ namespace Money
         [SerializeField] private TMP_Text moneyText;
 
         [Inject] private CoinTosser _coinTosser;
+        [Inject] private ShopBoard _shopBoard;
 
         private int _money = 175;
 
@@ -30,6 +32,11 @@ namespace Money
         {
             _money += amount;
             UpdateMoneyText();
+        }
+
+        public void OnClick()
+        {
+            _shopBoard.ShowWithParam();
         }
     }
 }

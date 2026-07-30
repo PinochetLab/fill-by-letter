@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
+using Boards;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -24,7 +25,7 @@ namespace Themes
 
         private HashSet<string> _glossary;
 
-        private Tweener shakeTweener;
+        private Tweener _shakeTweener;
 
         private void Awake()
         {
@@ -62,6 +63,8 @@ namespace Themes
             
             Show();
             
+            _themeTutorialBoard.ShowWithParam(theme);
+            
             _theme = theme;
             
             themeImage.sprite = theme.Sprite;
@@ -74,8 +77,8 @@ namespace Themes
 
         private void Impact()
         {
-            shakeTweener.Kill();
-            shakeTweener = transform.DOShakePosition(0.5f, strength: 10f, vibrato: 10, randomness: 90, snapping: false, fadeOut: true);
+            _shakeTweener.Kill();
+            _shakeTweener = transform.DOShakePosition(0.5f, strength: 10f, vibrato: 10, randomness: 90, snapping: false, fadeOut: true);
         }
 
         public int GetScore(string word)
@@ -95,8 +98,7 @@ namespace Themes
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            _themeTutorialBoard.Show();
-            _themeTutorialBoard.SetTheme(_theme);
+            _themeTutorialBoard.ShowWithParam(_theme);
         }
     }
 }

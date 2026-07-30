@@ -14,8 +14,8 @@ namespace Levels
         [SerializeField] private int firstScoreGoal;
         [SerializeField] private int secondScoreGoal;
 
-        [SerializeField] private List<Vector2Int> timeCoins;
-        [SerializeField] private List<LetterCoinInfo> letterCoins;
+        [SerializeField] private List<TimeCoin> timeCoins;
+        [SerializeField] private List<LetterCoin> letterCoins;
         
         [SerializeField] private Theme theme;
         
@@ -27,9 +27,9 @@ namespace Levels
         
         public int SecondScoreGoal => secondScoreGoal;
         
-        public List<Vector2Int> TimeCoins => timeCoins;
+        public List<TimeCoin> TimeCoins => timeCoins;
         
-        public List<LetterCoinInfo> LetterCoins => letterCoins;
+        public List<LetterCoin> LetterCoins => letterCoins;
         
         public Theme Theme => theme;
     }

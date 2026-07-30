@@ -30,6 +30,7 @@ namespace Words
 
         private void LoadTries()
         {
+            _trie = new Trie();
             _trie = _glossaryLoader.GetGlossary();
             _gameTrie = _trie.GetGameTrie();
             _solverTrie = _trie.GetSolverTrie();

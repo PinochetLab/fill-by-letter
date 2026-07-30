@@ -1,6 +1,7 @@
 ﻿using System;
 using Grids;
 using TMPro;
+using Boards;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -14,6 +15,7 @@ namespace Bonuses
         [SerializeField] private Shadow shadow;
         [SerializeField] private Outline selection;
         [SerializeField] private GameObject priceBoard;
+        [SerializeField] private RectTransform priceBoardRt;
         [SerializeField] private TMP_Text actionText;
         [SerializeField] private Image toolImage;
         [SerializeField] private TMP_Text priceText;
@@ -28,6 +30,12 @@ namespace Bonuses
         [Inject] private BonusTutorialBoard _bonusTutorialBoard;
 
         private bool _isOn;
+        private bool _wasUsed;
+
+        private void Start()
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(priceBoardRt);
+        }
 
         [ContextMenu("Update Tool")]
         private void UpdateTool()
@@ -156,16 +164,19 @@ namespace Bonuses
             _isOn = false;
             UpdateGraphics();
         }
-
-        public void Do()
-        {
-            _isOn = !_isOn;
-            UpdateState();
-        }
         
         public void OnClick()
         {
-            _bonusTutorialBoard.OpenIfNeeded(this, bonusTool);
+            if (!_wasUsed)
+            {
+                _wasUsed = true;
+                _bonusTutorialBoard.ShowWithParam(bonusTool);
+            }
+            else
+            {
+                _isOn = !_isOn;
+                UpdateState();
+            }
         }
     }
 }
