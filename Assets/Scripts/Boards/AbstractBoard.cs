@@ -10,7 +10,8 @@ namespace Boards
         [Header("Appear Settings")]
         [SerializeField] private GameObject screen;
         [SerializeField] private Transform board;
-        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField] private CanvasGroup boardCg;
+        [SerializeField] private CanvasGroup backCg;
         [SerializeField] private float duration = 0.5f;
 
         private static readonly Queue<AbstractBoard> BoardQueue = new ();
@@ -51,35 +52,44 @@ namespace Boards
         private void Show()
         {
             screen.SetActive(true);
+            backCg.blocksRaycasts = true;
+            boardCg.interactable = true;
             
             _fadeSequence.Kill();
             
             Time.timeScale = 0;
 
-            canvasGroup.alpha = 0;
+            backCg.alpha = 0;
+            boardCg.alpha = 0;
 
             board.localScale = Vector3.zero;
             
             _fadeSequence = DOTween.Sequence();
             
             _fadeSequence.Append(board.DOScale(1, duration));
-            _fadeSequence.Join(canvasGroup.DOFade(1, duration));
+            _fadeSequence.Join(backCg.DOFade(1, duration));
+            _fadeSequence.Join(boardCg.DOFade(1, duration));
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();
         }
 
         protected void Hide()
         {
+            boardCg.interactable = false;
+            backCg.blocksRaycasts = false;
+            
             _fadeSequence.Kill();
             
-            canvasGroup.alpha = 1;
+            backCg.alpha = 1;
+            boardCg.alpha = 1;
             
             board.localScale = Vector3.one;
             
             _fadeSequence = DOTween.Sequence();
             
             _fadeSequence.Append(board.DOScale(0, duration));
-            _fadeSequence.Join(canvasGroup.DOFade(0, duration));
+            _fadeSequence.Join(backCg.DOFade(0, duration));
+            _fadeSequence.Join(boardCg.DOFade(0, duration));
             _fadeSequence.OnComplete(EndHiding);
             _fadeSequence.SetUpdate(true);
             _fadeSequence.Play();

@@ -53,17 +53,23 @@ namespace Themes
             }
         }
 
+        public void ShowTutorial()
+        {
+            if (_theme is not null)
+            {
+                _themeTutorialBoard.ShowWithParam(_theme);
+            }
+        }
+
         public void SetTheme(Theme theme)
         {
-            if (theme == null)
+            if (theme is null)
             {
                 Hide();
                 return;
             }
             
             Show();
-            
-            _themeTutorialBoard.ShowWithParam(theme);
             
             _theme = theme;
             

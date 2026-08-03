@@ -27,11 +27,11 @@ namespace Money
             reward.gameObject.SetActive(false);
         }
 
-        public void SpawnReward(Vector3 position, int money)
+        public void SpawnReward(Vector3 position, Vector2 coinSize, int money)
         {
             var reward = TakeReward();
             
-            reward.SetUp(money);
+            reward.SetUp(money, coinSize);
             
             reward.Move(position).OnComplete(() => ReleaseReward(reward));
         }

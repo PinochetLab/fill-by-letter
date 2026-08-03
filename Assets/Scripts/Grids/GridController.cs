@@ -10,6 +10,8 @@ using Levels;
 using Progress;
 using Themes;
 using Boards;
+using DG.Tweening;
+using Game;
 using UnityEngine;
 using UnityEngine.UI;
 using WordBoards;
@@ -23,11 +25,13 @@ namespace Grids
         [SerializeField] private RectTransform rectTransform;
         [SerializeField] private float spacingRatio = 0.05f;
         [SerializeField] private GridLayoutGroup gridLayoutGroup;
+        [SerializeField] private GameObject raycastBlock; 
+        [SerializeField] private float appearDuration = 1f; 
+        [SerializeField] private float startRatio = 0.7f; 
         
         [SerializeField] private List<LetterBlock> blocks;
 
-        [SerializeField] private Level level;
-
+        [Inject] private GameController _gameController;
         [Inject] private LetterKeyboard _letterKeyboard;
         [Inject] private WordBoard _wordBoard;
         [Inject] private ProgressBoard _progressBoard;
@@ -65,6 +69,9 @@ namespace Grids
         private int _size;
         private LetterBlock[,] _grid;
         private Solver _solver;
+        private Level _level;
+        private int _filledCellCount;
+        private int _needToFill;
 
         private HashSet<CellType> _types = new ();
         public bool Drag { get; private set; }
@@ -114,29 +121,117 @@ namespace Grids
             _answer = null;
         }
 
-        private void Awake()
+        public Sequence Disappear()
         {
-            //Debug.Log("lol");
-            //SetLevel().Forget();
-            SetLevel();
+            raycastBlock.SetActive(true);
+            
+            var sequence = AppearDisappear(false);
+            
+            sequence.SetUpdate(true);
+
+            return sequence;
+        }
+        
+        private Sequence Appear()
+        {
+            var sequence = AppearDisappear(true);
+
+            sequence.OnComplete(OnAppear);
+
+            return sequence;
         }
 
-        public void SetLevel()
+        private Sequence AppearDisappear(bool appear)
         {
-            Application.targetFrameRate = 300;
-            _solver = _container.Instantiate<Solver>();
+            raycastBlock.SetActive(true);
+            
+            var sequence = DOTween.Sequence();
+            var isEmpty = true;
 
-            if (level.TimeCoins.Count > 0 && !_types.Contains(CellType.TimeCoin))
+            var size = _level.Size;
+
+            var dMax = 2 * size - 1;
+
+            var duration = appearDuration / dMax;
+            var gap = duration * startRatio;
+
+            for (var d = 0; d < dMax; d++)
+            {
+                var i = d;
+                var j = 0;
+                if (d > size - 1)
+                {
+                    i = size - 1;
+                    j = d - size + 1;
+                }
+
+                var s = DOTween.Sequence();
+                var delay = d == 0 ? 0 : duration * d - gap;
+                s.AppendInterval(delay);
+
+                var q = DOTween.Sequence();
+                var empty = true;
+                
+                while (i >= 0 && j < size)
+                {
+                    var block = appear ? _grid[i, j] : _grid[_size - i - 1, _size - j - 1];
+                    var seq = appear ? block.Appear(duration) : block.Disappear(duration);
+                    if (empty)
+                    {
+                        q.Append(seq);
+                        empty = false;
+                    }
+                    else
+                    {
+                        q.Join(seq);
+                    }
+                    i--;
+                    j++;
+                }
+
+                s.Append(q);
+                
+                if (isEmpty)
+                {
+                    sequence.Append(s);
+                    isEmpty = false;
+                }
+                else
+                {
+                    sequence.Join(s);
+                }
+            }
+
+            return sequence;
+        }
+
+        private void OnAppear()
+        {
+            raycastBlock.SetActive(false);
+            
+            if (_level.TimeCoins.Count > 0 && !_types.Contains(CellType.TimeCoin))
             {
                 _types.Add(CellType.TimeCoin);
                 _cellTutorialBoard.ShowWithParam(CellType.TimeCoin);
             }
             
-            if (level.LetterCoins.Count > 0 && !_types.Contains(CellType.LetterCoin))
+            if (_level.LetterCoins.Count > 0 && !_types.Contains(CellType.LetterCoin))
             {
                 _types.Add(CellType.LetterCoin);
                 _cellTutorialBoard.ShowWithParam(CellType.LetterCoin);
             }
+
+            _themeController.ShowTutorial();
+        }
+
+        public void SetLevel(Level level)
+        {
+            _filledCellCount = 0;
+            _needToFill = level.Size * (level.Size - 1);
+            
+            _level = level;
+            
+            _solver = _container.Instantiate<Solver>();
             
             BuildGrid(level.Size);
             SetWord(level.Word);
@@ -146,12 +241,14 @@ namespace Grids
 
         public void BuildGrid(int size)
         {
-            gridLayoutGroup.enabled = true;
-
+            gridLayoutGroup.enabled = false;
+            
             for (var i = 0; i < blocks.Count; i++)
             {
                 blocks[i].transform.SetSiblingIndex(i);
             }
+            
+            gridLayoutGroup.enabled = true;
             
             var s = rectTransform.rect.width;
 
@@ -174,24 +271,25 @@ namespace Grids
                 {
                     blocks[i].gameObject.SetActive(true);
                     
-                    blocks[i].PopUp();
-                    
                     var x = i % size;
                     var y = i / size;
 
                     _grid[x, y] = blocks[i];
-                    _grid[x, y].SetUp(x, y);
+                    _grid[x, y].SetUp(x, y, cellSize);
                     
                 }
                 else
                     blocks[i].gameObject.SetActive(false);
             }
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+
+            var sequence = Appear();
+            sequence.Play();
         }
 
         public void SetWord(string word)
         {
-            _progressBoard.AddStartWord(word);
-            
             if (word.Length != _size)
             {
                 Debug.LogError($"Word length {word.Length} is wrong");
@@ -224,13 +322,13 @@ namespace Grids
                 }
             }
 
-            foreach (var timeCoin in level.TimeCoins)
+            foreach (var timeCoin in _level.TimeCoins)
             {
                 var cell = timeCoin.Position;
                 _grid[cell.x, cell.y].SetTimer(timeCoin.Duration);
             }
             
-            foreach (var letterCoin in level.LetterCoins)
+            foreach (var letterCoin in _level.LetterCoins)
             {
                 var pos = letterCoin.Position;
                 _grid[pos.x, pos.y].SetSpecialLetter(letterCoin.Letter);
@@ -259,6 +357,17 @@ namespace Grids
         {
             return a.Y == b.Y && (a.X == b.X - 1 || a.X == b.X + 1)
                 || a.X == b.X && (a.Y == b.Y - 1 || a.Y == b.Y + 1);
+        }
+
+        public bool TryDeselect()
+        {
+            if (_selectedBlock && !CanPath)
+            {
+                _selectedBlock.State = BlockState.EmptyAvailable;
+                DeselectBlock();
+                return true;
+            }
+            return false;
         }
 
         public void DeselectBlock()
@@ -538,6 +647,12 @@ namespace Grids
 
             SwitchOffBonuses();
             ClearAnswer();
+
+            _filledCellCount++;
+            if (_filledCellCount >= _needToFill)
+            {
+                _gameController.GotToNextLevel();
+            }
         }
 
         private void SwitchOffBonuses()
@@ -580,6 +695,11 @@ namespace Grids
 
         public void StopHintLetter()
         {
+            if (!HintedLetter.HasValue)
+            {
+                return;
+            }
+            
             HintedLetter = null;
             
             foreach (var block in _grid)
@@ -625,7 +745,12 @@ namespace Grids
 
         public void StopHintCell()
         {
-            var p = Answer.LetterPos;
+            if (!HintedPos.HasValue)
+            {
+                return;
+            }
+            
+            var p = HintedPos.Value;
 
             HintedPos = null;
             
@@ -777,6 +902,7 @@ namespace Grids
         public void ChooseErase(LetterBlock block)
         {
             block.State = BlockState.EmptyAvailable;
+            _filledCellCount--;
 
             StopErase();
             
@@ -797,13 +923,13 @@ namespace Grids
             
             foreach (var block in _grid)
             {
-                if (block.State == BlockState.Filled)
+                if (block.State is BlockState.EmptyNotAvailable or BlockState.EmptyAvailable)
                 {
-                    block.Hide();
+                    block.StartHint();
                 }
                 else
                 {
-                    block.StartHint();
+                    block.Hide();
                 }
             }
             
@@ -840,6 +966,13 @@ namespace Grids
             _flagButton.SwitchOff();
             
             SwitchOffBonuses();
+            
+            _filledCellCount++;
+            
+            if (_filledCellCount >= _needToFill)
+            {
+                _gameController.GotToNextLevel();
+            }
         }
     }
 }

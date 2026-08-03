@@ -58,6 +58,12 @@ namespace Progress
 
             _speed = _secondScoreGoal;
             
+            _sliderTweener.Kill();
+            
+            _forbiddenWords.Clear();
+            _forbiddenWords.Add(level.Word);
+            
+            scoreSlider.value = 0;
             scoreSlider.maxValue = maxValue;
 
             _score = 0;
@@ -71,8 +77,6 @@ namespace Progress
             
             blocks.ForEach(b => b.gameObject.SetActive(false));
             _letterColorIndex = Random.Range(0, letterColors.Count);
-            
-            LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
         }
 
         private void AddScore(int score)
@@ -115,11 +119,6 @@ namespace Progress
             }
         }
 
-        public void AddStartWord(string word)
-        {
-            _forbiddenWords.Add(word);
-        }
-
         public bool CanMake(string word)
         {
             return !_forbiddenWords.Contains(word);
@@ -146,7 +145,6 @@ namespace Progress
             _letterColorIndex = (_letterColorIndex + 1) % letterColors.Count;
             block.gameObject.SetActive(true);
             block.SetWord(word, letterIndex, letterColor);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(wordsRt);
         }
     }
 }

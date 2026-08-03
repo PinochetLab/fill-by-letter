@@ -30,13 +30,13 @@ namespace Grids
         [SerializeField] private float hintDeltaScale = 0.1f;
         [SerializeField] private float scaleDuration = 0.5f;
         
-        [SerializeField] private GameObject timerGameObject;
+        [SerializeField] private RectTransform timerRt;
         [SerializeField] private Image timerFilledImage;
         [SerializeField] private RectTransform filledCoin;
 
         [SerializeField] private CanvasGroup canvasGroup;
 
-        [SerializeField] private GameObject specialLetter;
+        [SerializeField] private RectTransform specialLetter;
         [SerializeField] private TMP_Text specialLetterText;
         
         [SerializeField] private GameObject flag;
@@ -70,7 +70,6 @@ namespace Grids
         private bool _isDown;
         private Vector2 _lastMousePos;
         private float _mousePathDistance;
-        private Sequence _appearSequence;
         
         private char? HintedLetter { get; set; }
         
@@ -114,6 +113,10 @@ namespace Grids
                         EndSpecialLetter();
                     } 
                 }
+                else
+                {
+                    flag.SetActive(false);
+                }
                 
                 backlight.gameObject.SetActive(value == BlockState.FilledNewPath);
                 backlight2.gameObject.SetActive(value == BlockState.FilledNew);
@@ -146,10 +149,13 @@ namespace Grids
             }
         }
 
-        public void SetUp(int x, int y)
+        public void SetUp(int x, int y, float size)
         {
             X = x;
             Y = y;
+
+            timerRt.sizeDelta = Vector2.one * (size / 2);
+            specialLetter.sizeDelta = Vector2.one * (size / 2);
 
             _links = new Dictionary<Vector2Int, Image>()
             {
@@ -159,19 +165,19 @@ namespace Grids
                 { new Vector2Int(0, -1), topLink },
             };
             
-            specialLetter.SetActive(false);
+            specialLetter.gameObject.SetActive(false);
         }
 
         public void SetSpecialLetter(char letter)
         {
             SpecialLetter = letter;
-            specialLetter.SetActive(true);
+            specialLetter.gameObject.SetActive(true);
             specialLetterText.text = letter.ToString();
         }
 
         public void SetTimer(float duration)
         {
-            timerGameObject.SetActive(true);
+            timerRt.gameObject.SetActive(true);
 
             timerFilledImage.fillAmount = 1;
             
@@ -190,9 +196,9 @@ namespace Grids
             _timeCoinDisappearSequence.Kill();
             
             _timeCoinDisappearSequence = DOTween.Sequence()
-                .Append(timerGameObject.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
-                .Append(timerGameObject.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
-                .OnComplete(() => timerGameObject.SetActive(false))
+                .Append(timerRt.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                .Append(timerRt.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .OnComplete(() => timerRt.gameObject.SetActive(false))
                 .Play();
         }
         
@@ -201,8 +207,8 @@ namespace Grids
             _specialLetterDisappearSequence.Kill();
             
             _specialLetterDisappearSequence = DOTween.Sequence()
-                .Append(specialLetter.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
-                .Append(specialLetter.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .Append(specialLetter.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                .Append(specialLetter.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
                 .OnComplete(() => specialLetter.gameObject.SetActive(false))
                 .Play();
         }
@@ -234,16 +240,26 @@ namespace Grids
                 .SetUpdate(true);
         }
 
-        public void PopUp()
+        public Sequence Appear(float duration)
         {
-            _appearSequence.Kill();
-            
             transform.localScale = Vector3.zero;
 
-            _appearSequence = DOTween.Sequence();
-            _appearSequence.Append(transform.DOScale(1, 0.2f));
-            _appearSequence.SetUpdate(true);
-            _appearSequence.Play();
+            var sequence = DOTween.Sequence();
+            sequence.Append(transform.DOScale(1, duration));
+            //sequence.SetUpdate(true);
+
+            return sequence;
+            
+        }
+        
+        public Sequence Disappear(float duration)
+        {
+            transform.localScale = Vector3.one;
+
+            var sequence = DOTween.Sequence();
+            sequence.Append(transform.DOScale(0, duration));
+
+            return sequence;
         }
 
         public void StopHint()
@@ -267,16 +283,16 @@ namespace Grids
             if (_timeCoinSequence is not null && _timeCoinSequence.IsPlaying())
             {
                 _timeCoinSequence?.Kill();
-                _rewardSpawner.SpawnReward(filledCoin.position, 10);
-                timerGameObject.gameObject.SetActive(false);
+                _rewardSpawner.SpawnReward(filledCoin.position, timerRt.rect.size, 10);
+                timerRt.gameObject.SetActive(false);
             }
 
             if (SpecialLetter is not null)
             {
                 if (Letter == SpecialLetter)
                 {
-                    _rewardSpawner.SpawnReward(filledCoin.position, 10);
-                    specialLetter.SetActive(false);
+                    _rewardSpawner.SpawnReward(filledCoin.position, timerRt.rect.size, 10);
+                    specialLetter.gameObject.SetActive(false);
                 }
                 else
                 {
@@ -299,18 +315,18 @@ namespace Grids
 
         public void SetType(CellType type)
         {
-            timerGameObject.SetActive(false);
+            timerRt.gameObject.SetActive(false);
 
             text.text = string.Empty;
             
             switch (type)
             {
                 case CellType.TimeCoin:
-                    timerGameObject.SetActive(true);
+                    timerRt.gameObject.SetActive(true);
                     timerFilledImage.fillAmount = 0.75f;
                     break;
                 case CellType.LetterCoin:
-                    specialLetter.SetActive(false);
+                    specialLetter.gameObject.SetActive(true);
                     specialLetterText.text = "б";
                     break;
                 default:
@@ -406,9 +422,9 @@ namespace Grids
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (X == 2 && Y == 2)
+            if (_gridController.TryDeselect())
             {
-                Debug.Log($"Try Click!");
+                return;
             }
             
             if (_gridController.Flag)
@@ -450,13 +466,9 @@ namespace Grids
             
             switch (State)
             {
-                case BlockState.EmptyAvailable:
+                case BlockState.EmptyAvailable when !_gridController.CanPath:
                     _gridController.SelectBlock(this);
                     State = BlockState.EmptySelected;
-                    break;
-                case BlockState.EmptySelected:
-                    _gridController.DeselectBlock();
-                    State = BlockState.EmptyAvailable;
                     break;
                 case BlockState.Filled when _gridController.CanPath && _gridController.Path.Count > 0:
                     if (_gridController.TryAddToPath(this))
