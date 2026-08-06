@@ -10,16 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86c582a6e1de4d478ec3354a2e698288, type: 3}
-  m_Name: "10 - \u043A\u0438\u043D\u043E\u0442\u0435\u0430\u0442\u0440"
+  m_Name: "5 - \u043F\u043E\u043B\u043A"
   m_EditorClassIdentifier: 
-  size: 9
-<<<<<<<< HEAD:Assets/Levels/English/10 - кинотеатр.asset
-  word: adventure
-========
-  word: "\u043A\u0438\u043D\u043E\u0442\u0435\u0430\u0442\u0440"
->>>>>>>> 0b7d2ba8cba00295c9f81ae7e42c6ad0b96f35d9:Assets/Levels/10 - кинотеатр.asset
-  firstScoreGoal: 176
-  secondScoreGoal: 232
+  size: 4
+  word: "\u043F\u043E\u043B\u043A"
+  firstScoreGoal: 50
+  secondScoreGoal: 65
   timeCoins: []
   letterCoins: []
-  theme: {fileID: 0}
+  theme: {fileID: 11400000, guid: c5c482f5ba08f4242b4bafe695ec00b5, type: 2}
