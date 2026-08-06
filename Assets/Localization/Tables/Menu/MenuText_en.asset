@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: MenuText_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 2f3a96b5c15bd8f4b9966baf4fcfa5bc, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 8327899037966008559
+  m_TableData:
+  - m_Id: 3015290040320
+    m_Localized: Start typing words...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1131359678464
+    m_Localized: Start typing the word
+    m_Metadata:
+      m_Items:
+      - rid: 8327899037966008559
+  - m_Id: 449840799199232
+    m_Localized: OK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 450248888201216
+    m_Localized: 'Level theme:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 450454467817472
+    m_Localized: Collect words related to the topic and get <color=red>x{0}</color>
+      points!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 452041785389056
+    m_Localized: coins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 452135507111936
+    m_Localized: SALE!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 452342294687744
+    m_Localized: 2,21 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 452646859878400
+    m_Localized: Remove ads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 452735749763072
+    m_Localized: You will still be able to watch videos and receive rewards.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 453211371253760
+    m_Localized: 5,10 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 453838038020096
+    m_Localized: 0,89 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454298790703104
+    m_Localized: 4,25 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454602219237376
+    m_Localized: 8,69 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 454865348898816
+    m_Localized: hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455114054348800
+    m_Localized: '15,96 $ '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455420636999680
+    m_Localized: 42,00 $
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455594922913792
+    m_Localized: super
+    m_Metadata:
+      m_Items: []
+  - m_Id: 455980694024192
+    m_Localized: Tap to open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 458269617991680
+    m_Localized: SHOP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 459846667907072
+    m_Localized: Level <color=green>1</color>
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 8327899037966008559
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1131359678464

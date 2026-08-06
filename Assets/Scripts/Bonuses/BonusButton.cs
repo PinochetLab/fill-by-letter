@@ -3,6 +3,7 @@ using Grids;
 using TMPro;
 using Boards;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.UI;
 using Zenject;
 
@@ -23,7 +24,8 @@ namespace Bonuses
         [SerializeField] private Image priceImage;
         
         [Header("Tools")]
-        [SerializeField] private BonusTool bonusTool;
+        [SerializeField] private LocalizedAsset<BonusTool> bonusTool;
+        [SerializeField] private BonusTool editorBonusTool;
         
         [Inject] private GridController _gridController;
         
@@ -32,38 +34,42 @@ namespace Bonuses
         private bool _isOn;
         private bool _wasUsed;
 
+        private BonusTool _bonusTool;
+
         private void Start()
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(priceBoardRt);
         }
 
-        [ContextMenu("Update Tool")]
-        private void UpdateTool()
+        private void Awake()
         {
-            if (!bonusTool)
+            _bonusTool = bonusTool.LoadAsset();
+            
+            UpdateGraphics(_bonusTool);
+        }
+
+        private void UpdateGraphics(BonusTool tool)
+        {
+            if (!tool)
             {
                 actionText.text = string.Empty;
                 toolImage.gameObject.SetActive(false);
                 priceText.text = "0";
-                mainImage.color = Color.gray;
-                priceImage.color = Color.gray;
             }
             else
             {
-                actionText.text = bonusTool.ActionName;
+                actionText.text = tool.ActionName;
                 toolImage.gameObject.SetActive(true);
-                toolImage.sprite = bonusTool.SmallSprite;
-                priceText.text = bonusTool.Price.ToString();
-
-                var a = bonusTool.Color;
-                var b = bonusTool.Color;
-
-                a.a = 0.5f;
-                b *= 0.7f;
-                
-                mainImage.color = a;
-                priceImage.color = b;
+                toolImage.sprite = tool.SmallSprite;
+                priceText.text = tool.Price.ToString();
             }
+        }
+
+        [ContextMenu("Update Tool")]
+        private void UpdateTool()
+        {
+            UpdateGraphics(editorBonusTool);
+            
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.EditorUtility.SetDirty(actionText);
@@ -72,11 +78,6 @@ namespace Bonuses
             UnityEditor.EditorUtility.SetDirty(priceImage);
             UnityEditor.EditorUtility.SetDirty(toolImage);
 #endif
-        }
-
-        private void Awake()
-        {
-            UpdateGraphics();
         }
 
         public void SetInteractable(bool interactable)
@@ -107,7 +108,7 @@ namespace Bonuses
 
         private void OnOn()
         {
-            switch (bonusTool.Type)
+            switch (_bonusTool.Type)
             {
                 case BonusType.Letter:
                     _gridController.StartHintLetter();
@@ -134,7 +135,7 @@ namespace Bonuses
 
         private void OnOff()
         {
-            switch (bonusTool.Type)
+            switch (_bonusTool.Type)
             {
                 case BonusType.Letter:
                     _gridController.StopHintLetter();
@@ -170,7 +171,7 @@ namespace Bonuses
             if (!_wasUsed)
             {
                 _wasUsed = true;
-                _bonusTutorialBoard.ShowWithParam(bonusTool);
+                _bonusTutorialBoard.ShowWithParam(_bonusTool);
             }
             else
             {

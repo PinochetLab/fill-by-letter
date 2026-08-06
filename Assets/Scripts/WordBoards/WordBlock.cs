@@ -8,14 +8,13 @@ namespace WordBoards
     {
         [SerializeField] private RectTransform panelRt;
         [SerializeField] private TMP_Text text;
-        [SerializeField] private RectTransform textRt;
 
         public void SetWord(string word)
         {
             text.text = word;
             //LayoutRebuilder.ForceRebuildLayoutImmediate(textRt);
-            var sizeDelta =  textRt.rect.size;
-            sizeDelta.x += 30;
+            var sizeDelta =  panelRt.sizeDelta;
+            sizeDelta.x = text.preferredWidth + 60;
             panelRt.sizeDelta = sizeDelta;
         }
 

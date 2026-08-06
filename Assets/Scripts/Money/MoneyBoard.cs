@@ -14,7 +14,7 @@ namespace Money
         [Inject] private CoinTosser _coinTosser;
         [Inject] private ShopBoard _shopBoard;
 
-        private int _money = 175;
+        private int _money;
 
         private void Awake()
         {

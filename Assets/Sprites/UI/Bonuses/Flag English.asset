@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f011473c85094f8f9018f6fd1d6fbbf8, type: 3}
+  m_Name: Flag English
+  m_EditorClassIdentifier: 
+  toolName: Flag
+  actionName: flag
+  bigSprite: {fileID: 21300000, guid: 4b4774253bd8e3248a517754d7c1c546, type: 3}
+  smallSprite: {fileID: 21300000, guid: e0a5fa38bec8894458a551e076027090, type: 3}
+  price: 300
+  type: 5
+  color: {r: 0.49370772, g: 0.10690636, b: 0.6226415, a: 1}
+  description: Use the flag to fill the cell without using a letter.

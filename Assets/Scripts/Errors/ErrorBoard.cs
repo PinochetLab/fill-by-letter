@@ -3,6 +3,7 @@ using System.Linq;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.UI;
 using Zenject;
 
@@ -14,6 +15,15 @@ namespace Errors
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private Image backgroundImage;
         [SerializeField] private TMP_Text errorText;
+
+        [Header("Error Types")]
+        [SerializeField] private LocalizedAsset<ErrorType> wordDoesNotContainNewLetter;
+        [SerializeField] private LocalizedAsset<ErrorType> wordDoesNotExist;
+        [SerializeField] private LocalizedAsset<ErrorType> wordIsAlreadyCollected;
+        
+        private ErrorType _wordDoesNotContainNewLetter;
+        private ErrorType _wordDoesNotExist;
+        private ErrorType _wordIsAlreadyCollected;
         
         [Inject] private ErrorRankColorPalette _errorRankColorPalette;
 
@@ -21,10 +31,27 @@ namespace Errors
 
         private void Awake()
         {
-            body.SetActive(false);
+            _wordDoesNotContainNewLetter = wordDoesNotContainNewLetter.LoadAsset();
+            _wordDoesNotExist = wordDoesNotExist.LoadAsset();
+            _wordIsAlreadyCollected = wordIsAlreadyCollected.LoadAsset();
         }
 
-        public void PopUp(ErrorType errorType, params object[] ps)
+        public void ShowWordDoesNotContainNewLetter(string word, char letter)
+        {
+            PopUp(_wordDoesNotContainNewLetter, word, letter);
+        }
+        
+        public void ShowWordDoesNotExist(string word)
+        {
+            PopUp(_wordDoesNotExist, word);
+        }
+        
+        public void ShowWordIsAlreadyCollected(string word)
+        {
+            PopUp(_wordIsAlreadyCollected, word);
+        }
+
+        private void PopUp(ErrorType errorType, params object[] ps)
         {
             if (_fadeTweener != null && _fadeTweener.IsActive())
             {
@@ -35,7 +62,7 @@ namespace Errors
             canvasGroup.alpha = 1;
             var color = _errorRankColorPalette.GetColor(errorType.Rank);
             backgroundImage.color = color;
-            ps = ps.Select(p => $"<color=black>{p}</color>").ToArray();
+            ps = ps.Select(p => $"<color=black>{p.ToString().ToUpperInvariant()}</color>").ToArray();
             errorText.text = string.Format(errorType.Text, ps);
             
             var sequence = DOTween.Sequence();

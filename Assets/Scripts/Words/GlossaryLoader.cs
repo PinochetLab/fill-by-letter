@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -11,21 +14,37 @@ namespace Words
         private T _t;
         private bool _loaded;
         private readonly SemaphoreSlim _semaphore = new(0, 1);
-        
-        public async UniTask Load(AssetReference assetReference)
+
+        public async UniTask Load(TextAsset textAsset)
         {
+            if (textAsset == null)
+            {
+                Debug.LogError("TextAsset is null!");
+                _t = new T();
+                _loaded = true;
+                _semaphore?.Release();
+                return;
+            }
+
+            // Просто берем текст
+            string json = textAsset.text;
+    
+            // Убираем BOM
+            json = json.TrimStart('\uFEFF');
+    
+            // Десериализуем
             try
             {
-                var textAsset = await Addressables.LoadAssetAsync<TextAsset>(assetReference);
-                _t = JsonConvert.DeserializeObject<T>(textAsset.text);
-                _semaphore.Release();
+                _t = await UniTask.RunOnThreadPool(() => JsonConvert.DeserializeObject<T>(json));
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                Debug.LogError($"Ошибка загрузки словаря: {ex.Message}");
+                Debug.LogError($"Ошибка: {ex.Message}");
                 _t = new T();
-                _semaphore.Release();
             }
+    
+            _loaded = true;
+            _semaphore?.Release();
         }
 
         public T GetGlossary()

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Grids;
+using Keyboards;
 using Progress;
 using Tries;
 using UnityEngine;
+using UnityEngine.Localization;
 using Words;
 using Zenject;
 
@@ -15,10 +17,10 @@ namespace AIs
         [Inject] private TrieGlossaryLoader _trieGlossaryLoader;
         [Inject] private GridController _gridController;
         [Inject] private ProgressBoard _progressBoard;
-
-        private const string Alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
         
         private SolverTrie _solverTrie;
+
+        private string _alphabet;
 
         private SolverTrie Trie
         {
@@ -27,6 +29,22 @@ namespace AIs
                 _solverTrie ??= _trieGlossaryLoader.SolverTrie;
                 return _solverTrie;
             }
+        }
+
+        [Inject]
+        private void Init()
+        {
+            var alphabetEntry = new LocalizedAsset<Alphabet>
+            {
+                TableReference = "AlphabetTable",
+                TableEntryReference = "Alphabet"
+            };
+            
+            var handle = alphabetEntry.LoadAssetAsync();
+            handle.WaitForCompletion();
+
+            var alphabet = handle.Result;
+            _alphabet = alphabet.AllLetters;
         }
 
         public Answer FindBestWord(char?[,] letters, List<Vector2Int> availablePositions)
@@ -46,7 +64,7 @@ namespace AIs
 
             foreach (var position in availablePositions)
             {
-                foreach (var letter in Alphabet)
+                foreach (var letter in _alphabet)
                 {
                     letters[position.x, position.y] = letter;
 

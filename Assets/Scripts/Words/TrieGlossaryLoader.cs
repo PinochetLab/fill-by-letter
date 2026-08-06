@@ -3,12 +3,15 @@ using JetBrains.Annotations;
 using Tries;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Words
 {
     public class TrieGlossaryLoader : MonoBehaviour
     {
-        [SerializeField] private AssetReference trieJson;
+        [SerializeField] private LocalizedAsset<TextAsset> glossary;
         
         private readonly GlossaryLoader<Trie> _glossaryLoader = new ();
 
@@ -20,7 +23,14 @@ namespace Words
         {
             try
             {
-                await _glossaryLoader.Load(trieJson);
+                AsyncOperationHandle<TextAsset> handle = glossary.LoadAssetAsync();
+                await handle.Task;
+
+                TextAsset asset = handle.Result;
+                
+                await _glossaryLoader.Load(asset);
+                //TextAsset glossaryText = await glossary.LoadAssetAsync().Task;
+                //await _glossaryLoader.Load(glossary.LoadAsset());
             }
             catch (Exception e)
             {

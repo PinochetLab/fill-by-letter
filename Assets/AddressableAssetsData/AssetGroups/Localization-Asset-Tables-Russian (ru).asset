@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Localization-Asset-Tables-Russian (ru)
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Localization-Asset-Tables-Russian (ru)
+  m_GUID: 8ec2e3e593ca61548a941b94d0be9d02
+  m_SerializeEntries:
+  - m_GUID: 046e1b2b507b9bb46a51e110faa99259
+    m_Address: GlossaryTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 416e0387de5c5e84c818192a07ff807d
+    m_Address: TutorialTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49bf6efb03e5ba342aecf9e2f1298df4
+    m_Address: CellTypeInfoTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55821e20f1caf9d43aaca7f5f3d5e7a4
+    m_Address: ToolTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9d7551ea4c227744808a65762ada859
+    m_Address: LevelSetTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d151f7c81c32d774fa4bc44eaeec6e91
+    m_Address: ThemeTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d866341a99b48a040a1fe52a910ecb51
+    m_Address: AlphabetTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea9b68c6a8ac1ac429d04e0b9099d37a
+    m_Address: ErrorTable_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 1
+  m_Settings: {fileID: 11400000, guid: c61fad8d9b5fb8448972ec494641a1df, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 8255ff9405d1df84bb85d018c53f8eaa, type: 2}
+    - {fileID: 11400000, guid: 5a7363799a825ea4fbfdf8c3435e0dc8, type: 2}

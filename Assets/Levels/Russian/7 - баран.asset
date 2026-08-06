@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c582a6e1de4d478ec3354a2e698288, type: 3}
+  m_Name: "7 - \u0431\u0430\u0440\u0430\u043D"
+  m_EditorClassIdentifier: 
+  size: 5
+  word: "\u0431\u0430\u0440\u0430\u043D"
+  firstScoreGoal: 65
+  secondScoreGoal: 92
+  timeCoins:
+  - position: {x: 2, y: 0}
+    duration: 180
+  - position: {x: 2, y: 4}
+    duration: 210
+  letterCoins:
+  - position: {x: 3, y: 3}
+    letter: 1073
+  theme:
+    m_TableReference:
+      m_TableCollectionName: GUID:e418d9cf22ae69e4eb96e4d9948ac8bc
+    m_TableEntryReference:
+      m_KeyId: 464835461165056
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

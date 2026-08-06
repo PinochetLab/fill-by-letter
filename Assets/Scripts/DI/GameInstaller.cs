@@ -6,6 +6,8 @@ using Money;
 using Progress;
 using Themes;
 using Boards;
+using Game;
+using Tutorials;
 using UnityEngine;
 using WordBoards;
 using Words;
@@ -15,6 +17,7 @@ namespace DI
 {
     public class GameInstaller : MonoInstaller
     {
+        [SerializeField] private GameController gameController;
         [SerializeField] private GridController gridController;
         [SerializeField] private LetterKeyboard letterKeyboard;
         [SerializeField] private WordBoard wordBoard;
@@ -33,6 +36,8 @@ namespace DI
         [SerializeField] private WordMiniBoard wordMiniBoard;
         [SerializeField] private CellTutorialBoard cellTutorialBoard;
         [SerializeField] private ShopBoard shopBoard;
+        [SerializeField] private TutorialBoard tutorialBoard;
+        [SerializeField] private BoardManager boardManager;
         
         [Header("Bonus Buttons")]
         [SerializeField] private BonusButton letterButton;
@@ -44,6 +49,7 @@ namespace DI
 
         public override void InstallBindings()
         {
+            Container.Bind<GameController>().FromInstance(gameController).AsSingle();
             Container.Bind<GridController>().FromInstance(gridController).AsSingle();
             Container.Bind<LetterKeyboard>().FromInstance(letterKeyboard).AsSingle();
             Container.Bind<WordBoard>().FromInstance(wordBoard).AsSingle();
@@ -62,6 +68,8 @@ namespace DI
             Container.Bind<WordMiniBoard>().FromInstance(wordMiniBoard).AsSingle();
             Container.Bind<CellTutorialBoard>().FromInstance(cellTutorialBoard).AsSingle();
             Container.Bind<ShopBoard>().FromInstance(shopBoard).AsSingle();
+            Container.Bind<TutorialBoard>().FromInstance(tutorialBoard).AsSingle();
+            Container.Bind<BoardManager>().FromInstance(boardManager).AsSingle();
 
             Container.Bind<BonusButton>().WithId(BonusType.Letter).FromInstance(letterButton);
             Container.Bind<BonusButton>().WithId(BonusType.Cell).FromInstance(cellButton);

@@ -2,6 +2,7 @@
 using Grids;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using Zenject;
 
 namespace Boards
@@ -13,8 +14,17 @@ namespace Boards
         [SerializeField] private LetterBlock letterBlock;
         [SerializeField] private TMP_Text descriptionText;
         
-        [Inject(Id = CellType.TimeCoin)] private CellTypeInfo _timeCoinInfo;
-        [Inject(Id = CellType.LetterCoin)] private CellTypeInfo _letterCoinInfo;
+        [SerializeField] private LocalizedAsset<CellTypeInfo> timeCoinInfo;
+        [SerializeField] private LocalizedAsset<CellTypeInfo> letterCoinInfo;
+
+        private CellTypeInfo _timeCoinInfo;
+        private CellTypeInfo _letterCoinInfo;
+
+        private void Awake()
+        {
+            _timeCoinInfo = timeCoinInfo.LoadAsset();
+            _letterCoinInfo = letterCoinInfo.LoadAsset();
+        }
 
         private CellTypeInfo GetInfo(CellType cellType)
         {

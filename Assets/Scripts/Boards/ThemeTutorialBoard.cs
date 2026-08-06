@@ -2,6 +2,7 @@
 using Themes;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.UI;
 
 namespace Boards
@@ -9,11 +10,18 @@ namespace Boards
     public class ThemeTutorialBoard : AbstractBoard
     {
         [Header("Theme Settings")]
-        [SerializeField] private string description = "Собирай слова по теме и получай <color=red>x{0}</color> очков!";
-
         [SerializeField] private TMP_Text themeNameText;
         [SerializeField] private Image themeImage;
         [SerializeField] private TMP_Text descriptionText;
+        
+        [SerializeField] private LocalizedString themeDescription;
+
+        private string _themeDescription;
+
+        private void Awake()
+        {
+            _themeDescription = themeDescription.GetLocalizedString();
+        }
 
         protected override void ProcessParam(object param)
         {
@@ -24,7 +32,7 @@ namespace Boards
             
             themeNameText.text = theme.ThemeName;
             themeImage.sprite = theme.Sprite;
-            descriptionText.text = string.Format(description, theme.Multiplier);
+            descriptionText.text = string.Format(_themeDescription, theme.Multiplier);
         }
     }
 }

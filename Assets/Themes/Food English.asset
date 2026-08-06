@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d63f87967f84ac5a1b9b64de90e9a36, type: 3}
+  m_Name: Food English
+  m_EditorClassIdentifier: 
+  themeName: Food
+  multiplier: 3
+  sprite: {fileID: 21300000, guid: df349e8dce1bb4a41a5a0c8e708ea9e6, type: 3}
+  glossary: {fileID: 4900000, guid: d23619545824c8b4db6faa52cbaaabc4, type: 3}

@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fca094e085b64035821ccaff11e55025, type: 3}
+  m_Name: English Tutorial
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorials.Tutorial
+  steps:
+  - letterCell: {x: 1, y: 0}
+    letter: 121
+    path:
+    - {x: 2, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 0}
+    oneLine: 1
+    cancel: 0
+  - letterCell: {x: 1, y: 2}
+    letter: 119
+    path:
+    - {x: 1, y: 2}
+    - {x: 1, y: 1}
+    - {x: 1, y: 0}
+    oneLine: 0
+    cancel: 1
+  - letterCell: {x: 2, y: 0}
+    letter: 114
+    path:
+    - {x: 0, y: 1}
+    - {x: 1, y: 1}
+    - {x: 2, y: 1}
+    - {x: 2, y: 0}
+    - {x: 1, y: 0}
+    oneLine: 0
+    cancel: 0
+  targetText: Game target - to fill a grid
+  selectCell1Text: Select a cell
+  typeLetter1Text: 'Type a letter: <color=orange>{0}</color> '
+  writeWordText: 'Collect the word: <color=orange>{0}</color>'
+  selectCell2Text: Select a cell
+  typeLetter2Text: 'Type a letter: <color=orange>{0}</color>'
+  startWord1Text: Collect the word letter-by-letter
+  addLetter1Text: Select next letter
+  cancelText: I think there's a bigger word here... Let's <color=red>cancel</color>...
+  startWord2Text: Begin to collect the word
+  addLetter2Text: Select next cell
+  okText: Click <color=#036900>OK</color>

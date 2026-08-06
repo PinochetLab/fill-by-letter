@@ -11,7 +11,6 @@ namespace Bonuses
         [SerializeField] private Sprite smallSprite;
         [SerializeField] private int price;
         [SerializeField] private BonusType type;
-        [SerializeField] private Color color;
         [TextArea(3, 5)]
         [SerializeField] private string description;
         
@@ -21,7 +20,6 @@ namespace Bonuses
         public Sprite BigSprite => bigSprite;
         public int Price => price;
         public BonusType Type => type;
-        public Color Color => color;
         public string Description => description;
     }
 }

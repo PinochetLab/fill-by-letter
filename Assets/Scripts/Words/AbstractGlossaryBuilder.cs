@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 
 using System.IO;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using UnityEditor;
@@ -37,7 +38,7 @@ namespace Words
                 
                 AddWord(word);
                     
-                if (string.IsNullOrEmpty(word) || word.StartsWith("#"))
+                if (string.IsNullOrEmpty(word) || word.StartsWith("#") || !word.All(char.IsLetter))
                 {
                     skippedLines++;
                     continue;

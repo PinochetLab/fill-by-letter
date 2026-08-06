@@ -36,12 +36,6 @@ namespace Money
         private Sequence _hintFadeSequence;
         private Sequence _collectCoinsSequence;
 
-        private void Awake()
-        {
-            body.SetActive(false);
-            hintCanvasGroup.alpha = 0;
-        }
-
         public void OpenChest(RectTransform start, int coinCount)
         {
             Time.timeScale = 0;

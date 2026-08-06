@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f011473c85094f8f9018f6fd1d6fbbf8, type: 3}
+  m_Name: Eraser English
+  m_EditorClassIdentifier: 
+  toolName: Eraser
+  actionName: erase
+  bigSprite: {fileID: 21300000, guid: 0cc6d5736662de34dba7c479a55ee8fe, type: 3}
+  smallSprite: {fileID: 21300000, guid: e2a9bebf3b0fac142879887b17383caf, type: 3}
+  price: 200
+  type: 4
+  color: {r: 0.26289573, g: 0.5169811, b: 0.053648926, a: 1}
+  description: Use an eraser to erase the letter.

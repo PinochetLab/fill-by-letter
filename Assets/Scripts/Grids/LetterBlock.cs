@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using Zenject;
 using DG.Tweening;
 using Money;
+using Tutorials;
 using Random = UnityEngine.Random;
 
 namespace Grids
@@ -16,6 +17,9 @@ namespace Grids
     {
         [SerializeField] private Image image;
         [SerializeField] private TMP_Text text;
+        [SerializeField] private RectTransform rectTransform;
+
+        [SerializeField] private List<Image> slicedImages;
 
         [SerializeField] private Image leftLink;
         [SerializeField] private Image rightLink;
@@ -30,13 +34,14 @@ namespace Grids
         [SerializeField] private float hintDeltaScale = 0.1f;
         [SerializeField] private float scaleDuration = 0.5f;
         
-        [SerializeField] private GameObject timerGameObject;
+        [SerializeField] private RectTransform timerRt;
         [SerializeField] private Image timerFilledImage;
         [SerializeField] private RectTransform filledCoin;
+        [SerializeField] private RectMask2D rectMask;
 
-        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField] private GameObject hideBlock;
 
-        [SerializeField] private GameObject specialLetter;
+        [SerializeField] private RectTransform specialLetter;
         [SerializeField] private TMP_Text specialLetterText;
         
         [SerializeField] private GameObject flag;
@@ -45,18 +50,19 @@ namespace Grids
         [SerializeField] private BlockStateColorPalette textColorPalette;
         
         private Dictionary<Vector2Int, Image> _links;
-
-        private Image _activeLink;
+        private Dictionary<Vector2Int, Transform> _arrows;
         
         private Tweener _scaleTweener;
         private Sequence _timeCoinSequence;
         private Sequence _timeCoinDisappearSequence;
         private Sequence _specialLetterDisappearSequence;
+        private bool _interactable = true;
 
         private BlockState _state;
 
         [Inject] private GridController _gridController;
         [Inject] private RewardSpawner _rewardSpawner;
+        [Inject] private TutorialBoard _tutorialBoard;
 
         //private const float ChangeColorTime = 0.1f;
         
@@ -70,16 +76,16 @@ namespace Grids
         private bool _isDown;
         private Vector2 _lastMousePos;
         private float _mousePathDistance;
-        private Sequence _appearSequence;
         
         private char? HintedLetter { get; set; }
         
         public Vector2Int Position => new(X, Y);
 
-        private void Awake()
+        public Vector2 GetScreenPosition()
         {
-            selection.SetActive(false);
-            flag.SetActive(false);
+            var positions = new Vector3[4];
+            rectTransform.GetWorldCorners(positions);
+            return (positions[0] + positions[2]) / 2f;;
         }
 
         public BlockState State
@@ -98,22 +104,8 @@ namespace Grids
                 {
                     SetLetter('?');
                 }
-
-                if (value == BlockState.Flag)
-                {
-                    text.gameObject.SetActive(false);
-                    flag.SetActive(true);
-
-                    if (_timeCoinSequence is not null && _timeCoinSequence.IsPlaying())
-                    {
-                        EndTimer();
-                    }
-
-                    if (SpecialLetter is not null)
-                    {
-                        EndSpecialLetter();
-                    } 
-                }
+                
+                flag.SetActive(value == BlockState.Flag);
                 
                 backlight.gameObject.SetActive(value == BlockState.FilledNewPath);
                 backlight2.gameObject.SetActive(value == BlockState.FilledNew);
@@ -146,32 +138,65 @@ namespace Grids
             }
         }
 
-        public void SetUp(int x, int y)
+        public void SetUp(int x, int y, float size)
         {
             X = x;
             Y = y;
 
-            _links = new Dictionary<Vector2Int, Image>()
-            {
-                { new Vector2Int(-1, 0), leftLink },
-                { new Vector2Int(1, 0), rightLink },
-                { new Vector2Int(0, 1), bottomLink },
-                { new Vector2Int(0, -1), topLink },
-            };
+            const float bonusSize = 2.5f;
+
+            timerRt.sizeDelta = Vector2.one * (size / bonusSize);
+            specialLetter.sizeDelta = Vector2.one * (size / bonusSize);
+
+            timerRt.rotation = Quaternion.identity;
+            specialLetter.rotation = Quaternion.identity;
+
+            rectMask.softness = Vector2Int.one * (int)size;
+
+            var pixelsPerUnitMultiplier = 0.5f * (400 / size);
             
-            specialLetter.SetActive(false);
+            slicedImages.ForEach(i => i.pixelsPerUnitMultiplier = pixelsPerUnitMultiplier);
+
+            if (_links is null)
+            {
+                _links = new Dictionary<Vector2Int, Image>()
+                {
+                    { Vector2Int.left, leftLink },
+                    { Vector2Int.right, rightLink },
+                    { Vector2Int.up, bottomLink },
+                    { Vector2Int.down, topLink },
+                };
+
+                var arrows = new List<Image> { leftLink, rightLink, bottomLink, topLink }
+                    .Select(i => i.transform.GetChild(0)).ToList();
+            
+                _arrows = new Dictionary<Vector2Int, Transform>()
+                {
+                    { Vector2Int.left, arrows[0] },
+                    { Vector2Int.right, arrows[1] },
+                    { Vector2Int.up, arrows[2] },
+                    { Vector2Int.down, arrows[3] },
+                };
+            }
+
+            foreach (var arrow in _arrows.Values)
+            {
+                arrow.localScale = Vector3.one * (size / 200f);
+            }
+            
+            specialLetter.gameObject.SetActive(false);
         }
 
         public void SetSpecialLetter(char letter)
         {
             SpecialLetter = letter;
-            specialLetter.SetActive(true);
+            specialLetter.gameObject.SetActive(true);
             specialLetterText.text = letter.ToString();
         }
 
         public void SetTimer(float duration)
         {
-            timerGameObject.SetActive(true);
+            timerRt.gameObject.SetActive(true);
 
             timerFilledImage.fillAmount = 1;
             
@@ -190,9 +215,10 @@ namespace Grids
             _timeCoinDisappearSequence.Kill();
             
             _timeCoinDisappearSequence = DOTween.Sequence()
-                .Append(timerGameObject.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
-                .Append(timerGameObject.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
-                .OnComplete(() => timerGameObject.SetActive(false))
+                //.Append(timerRt.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                //.Append(timerRt.DORotate(Vector3.up * 90, 0.35f).SetEase(Ease.OutBack))
+                .Append(timerRt.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                .OnComplete(() => timerRt.gameObject.SetActive(false))
                 .Play();
         }
         
@@ -201,8 +227,9 @@ namespace Grids
             _specialLetterDisappearSequence.Kill();
             
             _specialLetterDisappearSequence = DOTween.Sequence()
-                .Append(specialLetter.transform.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
-                .Append(specialLetter.transform.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
+                //.Append(specialLetter.DOScale(1.3f, 0.25f).SetEase(Ease.OutBack))
+                //.Append(specialLetter.DORotate(Vector3.up * 90, 0.35f).SetEase(Ease.OutBack))
+                .Append(specialLetter.DOScale(0f, 0.35f).SetEase(Ease.InCubic))
                 .OnComplete(() => specialLetter.gameObject.SetActive(false))
                 .Play();
         }
@@ -234,16 +261,26 @@ namespace Grids
                 .SetUpdate(true);
         }
 
-        public void PopUp()
+        public Sequence Appear(float duration)
         {
-            _appearSequence.Kill();
-            
             transform.localScale = Vector3.zero;
 
-            _appearSequence = DOTween.Sequence();
-            _appearSequence.Append(transform.DOScale(1, 0.2f));
-            _appearSequence.SetUpdate(true);
-            _appearSequence.Play();
+            var sequence = DOTween.Sequence();
+            sequence.Append(transform.DOScale(1, duration));
+            //sequence.SetUpdate(true);
+
+            return sequence;
+            
+        }
+        
+        public Sequence Disappear(float duration)
+        {
+            transform.localScale = Vector3.one;
+
+            var sequence = DOTween.Sequence();
+            sequence.Append(transform.DOScale(0, duration));
+
+            return sequence;
         }
 
         public void StopHint()
@@ -254,29 +291,38 @@ namespace Grids
 
         public void Hide()
         {
-            canvasGroup.enabled = true;
+            _interactable = false;
+            hideBlock.SetActive(true);
         }
         
         public void Show()
         {
-            canvasGroup.enabled = false;
+            _interactable = true;
+            hideBlock.SetActive(false);
         }
 
-        public void Complete()
+        public void Complete(bool flag = false)
         {
-            if (_timeCoinSequence is not null && _timeCoinSequence.IsPlaying())
+            if (_timeCoinSequence.IsActive())
             {
-                _timeCoinSequence?.Kill();
-                _rewardSpawner.SpawnReward(filledCoin.position, 10);
-                timerGameObject.gameObject.SetActive(false);
+                if (!flag)
+                {
+                    _timeCoinSequence?.Kill();
+                    _rewardSpawner.SpawnReward(filledCoin.position, timerRt.rect.size, 10);
+                    timerRt.gameObject.SetActive(false);
+                }
+                else
+                {
+                    EndTimer();
+                }
             }
 
             if (SpecialLetter is not null)
             {
-                if (Letter == SpecialLetter)
+                if (!flag && Letter == SpecialLetter)
                 {
-                    _rewardSpawner.SpawnReward(filledCoin.position, 10);
-                    specialLetter.SetActive(false);
+                    _rewardSpawner.SpawnReward(filledCoin.position, timerRt.rect.size, 10);
+                    specialLetter.gameObject.SetActive(false);
                 }
                 else
                 {
@@ -299,51 +345,65 @@ namespace Grids
 
         public void SetType(CellType type)
         {
-            timerGameObject.SetActive(false);
+            timerRt.gameObject.SetActive(false);
 
             text.text = string.Empty;
             
             switch (type)
             {
                 case CellType.TimeCoin:
-                    timerGameObject.SetActive(true);
+                    timerRt.gameObject.SetActive(true);
+                    //State = BlockState.EmptyAvailable;
                     timerFilledImage.fillAmount = 0.75f;
                     break;
                 case CellType.LetterCoin:
-                    specialLetter.SetActive(false);
-                    specialLetterText.text = "б";
+                    specialLetter.gameObject.SetActive(true);
+                    //State = BlockState.EmptyAvailable;
+                    specialLetterText.text = "В";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
+            
+            SetLetter('?');
         }
 
         public void DePath()
         {
+            _links.Values.ToList().ForEach(l => l.gameObject.SetActive(false));
             switch (State)
             {
                 case BlockState.FilledPath when _gridController.CanPath:
                     State = BlockState.Filled;
-                    if (_activeLink)
-                    {
-                        _activeLink.gameObject.SetActive(false);
-                        _activeLink = null;
-                    }
                     break;
                 case BlockState.FilledNewPath when _gridController.CanPath:
                     State = BlockState.FilledNew;
-                    if (_activeLink)
-                    {
-                        _activeLink.gameObject.SetActive(false);
-                        _activeLink = null;
-                    }
                     break;
             }
         }
 
+        public void AddDirection(Vector2Int direction, bool isLast)
+        {
+            var link = _links[direction];
+            link.gameObject.SetActive(true);
+            var arrow = _arrows[direction];
+            arrow.gameObject.SetActive(isLast);
+        }
+        
+        public void RemoveDirection(Vector2Int direction)
+        {
+            var link = _links[direction];
+            link.gameObject.SetActive(false);
+        }
+
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!_gridController.CanPath || _gridController.Path.Count > 0)
+            if (_tutorialBoard.IsActive && !_tutorialBoard.OneLine)
+            {
+                return;
+            }
+            
+            if (!_interactable || !_gridController.CanPath || _gridController.Path.Count > 0)
             {
                 return;
             }
@@ -358,12 +418,7 @@ namespace Grids
                         _isDown = true;
                         _lastMousePos = Input.mousePosition;
                         _mousePathDistance = 0;
-                        
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
+                        _gridController.Drag = true;
                     }
                     break;
                 case BlockState.FilledNew:
@@ -374,12 +429,7 @@ namespace Grids
                         _isDown = true;
                         _lastMousePos = Input.mousePosition;
                         _mousePathDistance = 0;
-                        
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
+                        _gridController.Drag = true;
                     }
                     break;
             }
@@ -406,9 +456,41 @@ namespace Grids
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (X == 2 && Y == 2)
+            if (!_interactable || _gridController.TryDeselect())
             {
-                Debug.Log($"Try Click!");
+                return;
+            }
+            
+            if (_tutorialBoard.IsActive && State == BlockState.EmptyAvailable)
+            {
+                _gridController.SelectBlock(this);
+                State = BlockState.EmptySelected;
+                return;
+            }
+            
+            if (_tutorialBoard.IsActive && _tutorialBoard.OneLine)
+            {
+                return;
+            }
+            
+            if (_tutorialBoard.IsActive && !_tutorialBoard.OneLine)
+            {
+                switch (State)
+                {
+                    case BlockState.Filled when _gridController.CanPath:
+                        if (_gridController.TryAddToPath(this))
+                        {
+                            State = BlockState.FilledPath;
+                        }
+                        break;
+                    case BlockState.FilledNew when _gridController.CanPath:
+                        if (_gridController.TryAddToPath(this))
+                        {
+                            State = BlockState.FilledNewPath;
+                        }
+                        break;
+                }
+                return;
             }
             
             if (_gridController.Flag)
@@ -450,58 +532,32 @@ namespace Grids
             
             switch (State)
             {
-                case BlockState.EmptyAvailable:
+                case BlockState.EmptyAvailable when !_gridController.CanPath:
                     _gridController.SelectBlock(this);
                     State = BlockState.EmptySelected;
-                    break;
-                case BlockState.EmptySelected:
-                    _gridController.DeselectBlock();
-                    State = BlockState.EmptyAvailable;
                     break;
                 case BlockState.Filled when _gridController.CanPath && _gridController.Path.Count > 0:
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledPath;
-                        
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
                     }
                     break;
                 case BlockState.FilledNew when _gridController.CanPath && _gridController.Path.Count > 0:
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledNewPath;
-                        
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
                     }
                     break;
                 case BlockState.FilledPath when _gridController.CanPath && (!_isDown || _mousePathDistance > 10):
                     if (_gridController.TryRemoveFromPath(this))
                     {
                         State = BlockState.Filled;
-                        if (_activeLink)
-                        {
-                            _activeLink.gameObject.SetActive(false);
-                            _activeLink = null;
-                        }
                     }
                     break;
                 case BlockState.FilledNewPath when _gridController.CanPath && (!_isDown || _mousePathDistance > 10):
                     if (_gridController.TryRemoveFromPath(this))
                     {
                         State = BlockState.FilledNew;
-                        if (_activeLink)
-                        {
-                            _activeLink.gameObject.SetActive(false);
-                            _activeLink = null;
-                        }
                     }
                     break;
             }
@@ -509,7 +565,12 @@ namespace Grids
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!_gridController.Drag || _gridController.Path.Count == 0)
+            if (!_interactable || !_gridController.Drag || _gridController.Path.Count == 0)
+            {
+                return;
+            }
+            
+            if (_tutorialBoard.IsActive && !_tutorialBoard.OneLine)
             {
                 return;
             }
@@ -520,22 +581,12 @@ namespace Grids
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledPath;
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
                     }
                     break;
                 case BlockState.FilledNew:
                     if (_gridController.TryAddToPath(this))
                     {
                         State = BlockState.FilledNewPath;
-                        if (_gridController.TryGetAntiDirection(out var antiDirection))
-                        {
-                            _activeLink = _links[antiDirection];
-                            _activeLink.gameObject.SetActive(true);
-                        }
                     }
                     break;
                 case BlockState.FilledPath:

@@ -2,6 +2,7 @@
 using Money;
 using Themes;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace Levels
 {
@@ -17,7 +18,7 @@ namespace Levels
         [SerializeField] private List<TimeCoin> timeCoins;
         [SerializeField] private List<LetterCoin> letterCoins;
         
-        [SerializeField] private Theme theme;
+        [SerializeField] private LocalizedAsset<Theme> theme;
         
         public int Size => size;
         
@@ -31,6 +32,6 @@ namespace Levels
         
         public List<LetterCoin> LetterCoins => letterCoins;
         
-        public Theme Theme => theme;
+        public LocalizedAsset<Theme> Theme => theme;
     }
 }

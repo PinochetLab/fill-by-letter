@@ -4,6 +4,7 @@ using DG.Tweening;
 using Levels;
 using Money;
 using TMPro;
+using Tutorials;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -16,6 +17,7 @@ namespace Progress
         [SerializeField] private List<MadeWordBlock> blocks;
         [SerializeField] private RectTransform wordsRt;
         [SerializeField] private TMP_Text scoreText;
+        [SerializeField] private GameObject emptyText;
         
         [SerializeField] private Slider scoreSlider;
         [SerializeField] private Slider firstScoreGoalSlider;
@@ -37,9 +39,10 @@ namespace Progress
         private bool _firstScoreGoalReached;
         private bool _secondScoreGoalReached;
 
-        private Tweener _sliderTweener;
+        private Sequence _sliderSequence;
 
         [Inject] private TreasureBoard _treasureBoard;
+        [Inject] private TutorialBoard _tutorialBoard;
 
         private readonly List<MadeWordBlock> _madeWords = new();
 
@@ -58,10 +61,17 @@ namespace Progress
 
             _speed = _secondScoreGoal;
             
+            _sliderSequence.Kill();
+            
+            _forbiddenWords.Clear();
+            _forbiddenWords.Add(level.Word);
+            
+            scoreSlider.value = 0;
             scoreSlider.maxValue = maxValue;
 
             _score = 0;
             UpdateScore();
+            emptyText.SetActive(true);
             
             firstScoreGoalSlider.maxValue = maxValue;
             firstScoreGoalSlider.value = _firstScoreGoal;
@@ -71,8 +81,6 @@ namespace Progress
             
             blocks.ForEach(b => b.gameObject.SetActive(false));
             _letterColorIndex = Random.Range(0, letterColors.Count);
-            
-            LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
         }
 
         private void AddScore(int score)
@@ -86,8 +94,15 @@ namespace Progress
 
             var duration = delta / _speed;
             
-            _sliderTweener.Kill();
-            _sliderTweener = scoreSlider.DOValue(newScore, duration);
+            _sliderSequence.Kill();
+
+            _sliderSequence = DOTween.Sequence();
+
+            _sliderSequence.Append(scoreSlider.DOValue(newScore, duration));
+            if (_tutorialBoard.IsActive)
+            {
+                _sliderSequence.SetUpdate(false);
+            }
             
             _score = newScore;
             UpdateScore();
@@ -115,11 +130,6 @@ namespace Progress
             }
         }
 
-        public void AddStartWord(string word)
-        {
-            _forbiddenWords.Add(word);
-        }
-
         public bool CanMake(string word)
         {
             return !_forbiddenWords.Contains(word);
@@ -127,6 +137,7 @@ namespace Progress
 
         public void MakeWord(string word, int score, int letterIndex)
         {
+            emptyText.SetActive(false);
             _forbiddenWords.Add(word);
             AddScore(score);
             MadeWordBlock block;
@@ -146,7 +157,6 @@ namespace Progress
             _letterColorIndex = (_letterColorIndex + 1) % letterColors.Count;
             block.gameObject.SetActive(true);
             block.SetWord(word, letterIndex, letterColor);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(wordsRt);
         }
     }
 }

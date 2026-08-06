@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f011473c85094f8f9018f6fd1d6fbbf8, type: 3}
+  m_Name: Eraser Russian
+  m_EditorClassIdentifier: 
+  toolName: "\u041B\u0430\u0441\u0442\u0438\u043A"
+  actionName: "\u0441\u0442\u0435\u0440\u0435\u0442\u044C"
+  bigSprite: {fileID: 21300000, guid: 0cc6d5736662de34dba7c479a55ee8fe, type: 3}
+  smallSprite: {fileID: 21300000, guid: e2a9bebf3b0fac142879887b17383caf, type: 3}
+  price: 200
+  type: 4
+  color: {r: 0.26289573, g: 0.5169811, b: 0.053648926, a: 1}
+  description: "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439 \u043B\u0430\u0441\u0442\u0438\u043A
+    \u0434\u043B\u044F \u0442\u043E\u0433\u043E, \u0447\u0442\u043E\u0431\u044B \u0441\u0442\u0435\u0440\u0435\u0442\u044C
+    \u0431\u0443\u043A\u0432\u0443."

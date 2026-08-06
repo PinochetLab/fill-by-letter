@@ -1,117 +1,104 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
 
-namespace Animations
+[RequireComponent(typeof(TMP_Text))]
+public class WavyText : MonoBehaviour
 {
-    public class WavyText : MonoBehaviour
-{
-    public TMP_Text textComponent;
-    
-    [Header("Wave Settings")]
-    public float waveSpeed = 1.5f;        // Чуть медленнее для плавности
-    public float waveHeight = 3f;          // Меньше амплитуда
-    public float waveFrequency = 0.4f;     // Более редкие волны
-    
-    [Header("Color Settings - Pastel")]
-    [Range(0f, 1f)]
-    public float colorSpeed = 0.7f;        // Медленный перелив
-    [Range(0f, 1f)]
-    public float pastelSaturation = 0.35f; // Низкая насыщенность = пастель
-    [Range(0f, 1f)]
-    public float pastelBrightness = 0.9f;  // Светлые тона
-    
-    [Header("Optional")]
-    public bool useFixedPalette = false;   // Включить для фиксированной палитры
-    public Color[] pastelPalette = new Color[]
-    {
-        new Color(1f, 0.7f, 0.7f), // Розовый
-        new Color(0.7f, 0.9f, 0.8f), // Мятный
-        new Color(0.8f, 0.7f, 1f), // Лаванда
-        new Color(1f, 0.9f, 0.6f), // Кремовый
-        new Color(0.6f, 0.8f, 1f), // Небесный
-        new Color(1f, 0.7f, 0.9f), // Розовый-фламинго
-    };
-    
-    private float phaseOffset = 0f;
+    private TMP_Text m_TextComponent;
 
-    void Start()
+    [Header("Настройки волны")]
+    [Tooltip("Скорость движения волны")]
+    public float waveSpeed = 5f;
+    
+    [Tooltip("Высота волны (амплитуда)")]
+    public float waveHeight = 10f;
+    
+    [Tooltip("Частота (расстояние между пиками волны)")]
+    public float waveFrequency = 5f;
+
+    [Header("Настройки цвета (Темные пастельные)")]
+    [Tooltip("Скорость смены цветовых оттенков")]
+    public float colorSpeed = 2f;
+
+    void Awake()
     {
-        phaseOffset = Random.Range(0f, 100f); // Случайный сдвиг для каждого объекта
+        m_TextComponent = GetComponent<TMP_Text>();
+    }
+
+    // Этот метод вызывается каждый раз, когда объект активируется
+    void OnEnable()
+    {
+        // Если компонент уже есть, сразу применяем анимацию,
+        // чтобы избежать белого кадра.
+        if (m_TextComponent != null)
+        {
+            AnimateText();
+        }
     }
 
     void Update()
     {
-        if (textComponent == null) return;
-        
-        textComponent.ForceMeshUpdate();
-        var textInfo = textComponent.textInfo;
-        
-        if (textInfo.characterCount == 0) return;
-        
-        var meshInfo = textInfo.meshInfo[0];
-        var vertices = meshInfo.vertices;
-        var colors32 = meshInfo.colors32;
-        
-        // Сохраняем оригинальные позиции для плавной анимации
-        Vector3[] basePositions = new Vector3[vertices.Length];
-        System.Array.Copy(vertices, basePositions, vertices.Length);
-        
-        for (int i = 0; i < textInfo.characterCount; i++)
-        {
-            var charInfo = textInfo.characterInfo[i];
-            if (!charInfo.isVisible) continue;
-            
-            int vertIndex = charInfo.vertexIndex;
-            
-            // === МЯГКАЯ ВОЛНА (синус с плавными переходами) ===
-            float time = Time.time * waveSpeed + phaseOffset;
-            float wave = Mathf.Sin(time + i * waveFrequency);
-            
-            // Используем smooth step для более органичного движения
-            float smoothWave = Mathf.SmoothStep(-1f, 1f, wave * 0.5f + 0.5f) * 2f - 1f;
-            float offsetY = smoothWave * waveHeight;
-            
-            // Добавляем небольшую горизонтальную вибрацию для живости
-            float offsetX = Mathf.Sin(time * 0.7f + i * 0.3f) * waveHeight * 0.15f;
-            
-            Vector3 offset = new Vector3(offsetX, offsetY, 0);
-            
-            vertices[vertIndex + 0] += offset;
-            vertices[vertIndex + 1] += offset;
-            vertices[vertIndex + 2] += offset;
-            vertices[vertIndex + 3] += offset;
-            
-            // === ПАСТЕЛЬНЫЙ ЦВЕТ ===
-            Color color;
-            
-            if (useFixedPalette)
-            {
-                // Используем фиксированную палитру
-                int colorIndex = i % pastelPalette.Length;
-                color = pastelPalette[colorIndex];
-            }
-            else
-            {
-                // Плавный перелив в пастельных тонах
-                float hue = (Time.time * colorSpeed + i * 0.04f + phaseOffset) % 1f;
-                color = Color.HSVToRGB(hue, pastelSaturation, pastelBrightness);
-            }
-            
-            // Добавляем вариацию яркости для объема
-            float brightnessVariation = 0.85f + 0.15f * Mathf.Sin(Time.time * 0.5f + i * 0.2f);
-            color *= brightnessVariation;
-            
-            Color32 color32 = color;
-            
-            colors32[vertIndex + 0] = color32;
-            colors32[vertIndex + 1] = color32;
-            colors32[vertIndex + 2] = color32;
-            colors32[vertIndex + 3] = color32;
-        }
-        
-        meshInfo.mesh.vertices = vertices;
-        meshInfo.mesh.colors32 = colors32;
-        textComponent.UpdateVertexData(TMP_VertexDataUpdateFlags.All);
+        AnimateText();
     }
-}
+
+    // Основная логика анимации вынесена в отдельный метод
+    private void AnimateText()
+    {
+        // Принудительно обновляем данные текста, если они изменились
+        m_TextComponent.ForceMeshUpdate();
+        TMP_TextInfo textInfo = m_TextComponent.textInfo;
+
+        int characterCount = textInfo.characterCount;
+
+        if (characterCount == 0) return;
+
+        // Проходим по всем символам
+        for (int i = 0; i < characterCount; i++)
+        {
+            TMP_CharacterInfo charInfo = textInfo.characterInfo[i];
+
+            // Пропускаем невидимые символы
+            if (!charInfo.isVisible)
+                continue;
+
+            // Получаем индексы для доступа к массивам вершин и цветов
+            int materialIndex = charInfo.materialReferenceIndex;
+            int vertexIndex = charInfo.vertexIndex;
+
+            // Кэшируем ссылки на массивы (это быстрее, чем получать их каждый раз в цикле)
+            Vector3[] vertices = textInfo.meshInfo[materialIndex].vertices;
+            Color32[] vertexColors = textInfo.meshInfo[materialIndex].colors32;
+
+            // --- Расчет смещения Y ---
+            float timeOffset = Time.time * waveSpeed + i * (waveFrequency * 0.1f);
+            float offsetY = Mathf.Sin(timeOffset) * waveHeight;
+
+            // --- Расчет цвета ---
+            float hue = Mathf.Repeat(Time.time * colorSpeed * 0.1f + i * 0.05f, 1f);
+            // Пастельные темные тона: S=0.35, V=0.6
+            Color32 pastelDarkColor = Color.HSVToRGB(hue, 0.35f, 0.6f);
+
+            // Применяем изменения к 4 вершинам каждого символа
+            for (int j = 0; j < 4; j++)
+            {
+                int currentVertexIndex = vertexIndex + j;
+                
+                // Позиция
+                Vector3 orig = vertices[currentVertexIndex];
+                vertices[currentVertexIndex] = new Vector3(orig.x, orig.y + offsetY, orig.z);
+
+                // Цвет
+                vertexColors[currentVertexIndex] = pastelDarkColor;
+            }
+        }
+
+        // Передаем измененные данные обратно в меш компонента
+        for (int i = 0; i < textInfo.meshInfo.Length; i++)
+        {
+            // Важно: помечаем массивы как измененные, чтобы Unity обновила буферы
+            textInfo.meshInfo[i].mesh.vertices = textInfo.meshInfo[i].vertices;
+            textInfo.meshInfo[i].mesh.colors32 = textInfo.meshInfo[i].colors32;
+            m_TextComponent.UpdateGeometry(textInfo.meshInfo[i].mesh, i);
+        }
+    }
 }

@@ -16,21 +16,17 @@ namespace Themes
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private Image themeImage;
         [SerializeField] private TMP_Text multiplierText;
+        [SerializeField] private TMP_Text effectText;
         
         [Inject] private ThemeTutorialBoard _themeTutorialBoard;
 
         private Theme _theme;
         
-        private GlossaryLoader<HashSet<string>> _loader;
+        private GlossaryLoader<List<string>> _loader;
 
-        private HashSet<string> _glossary;
+        private List<string> _glossary;
 
-        private Tweener _shakeTweener;
-
-        private void Awake()
-        {
-            Hide();
-        }
+        private Sequence _shakeSequence;
 
         private void Hide()
         {
@@ -44,7 +40,7 @@ namespace Themes
             canvasGroup.interactable = true;
         }
 
-        private HashSet<string> Glossary
+        private List<string> Glossary
         {
             get
             {
@@ -53,32 +49,66 @@ namespace Themes
             }
         }
 
+        public void ShowTutorial()
+        {
+            if (_theme is not null)
+            {
+                _themeTutorialBoard.ShowWithParam(_theme);
+            }
+        }
+
         public void SetTheme(Theme theme)
         {
-            if (theme == null)
+            if (theme is null)
             {
+                _theme = null;
                 Hide();
                 return;
             }
             
-            Show();
+            effectText.gameObject.SetActive(false);
             
-            _themeTutorialBoard.ShowWithParam(theme);
+            Show();
             
             _theme = theme;
             
             themeImage.sprite = theme.Sprite;
             multiplierText.text = $"x{theme.Multiplier}";
+            effectText.text = $"x{theme.Multiplier}";
 
             _glossary = null;
-            _loader = new GlossaryLoader<HashSet<string>>();
+            _loader = new GlossaryLoader<List<string>>();
             _ = _loader.Load(theme.Glossary);
         }
 
         private void Impact()
         {
-            _shakeTweener.Kill();
-            _shakeTweener = transform.DOShakePosition(0.5f, strength: 10f, vibrato: 10, randomness: 90, snapping: false, fadeOut: true);
+            _shakeSequence.Kill();
+            
+            _shakeSequence = DOTween.Sequence();
+
+            _shakeSequence.Append(transform.DOShakePosition(
+                duration: 0.6f, // Дольше = заметнее
+                strength: 25f, // Огромная амплитуда
+                vibrato: 30, // Очень много вибраций
+                randomness: 100, // Максимальный хаос
+                snapping: false,
+                fadeOut: true
+            ));
+            
+            effectText.gameObject.SetActive(true);
+            effectText.rectTransform.anchoredPosition = Vector2.zero;
+            effectText.rectTransform.localScale = Vector3.one;
+            effectText.alpha = 1f;
+
+            const float duration = 1f;
+
+            _shakeSequence.Join(effectText.rectTransform.DOAnchorPos(Vector2.up * 300, duration));
+            _shakeSequence.Join(effectText.rectTransform.DOScale(1.6f, duration));
+            _shakeSequence.Join(effectText.DOFade(0f, duration).SetEase(Ease.InExpo));
+
+            _shakeSequence.SetUpdate(true);
+            _shakeSequence.Play();
         }
 
         public int GetScore(string word)

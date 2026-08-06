@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Boards
@@ -10,7 +12,7 @@ namespace Boards
         
         protected override void ProcessParam(object _)
         {
-            scrollRect.normalizedPosition = new Vector2(0, 1);
+            scrollRect.normalizedPosition = new Vector2(0f, 1f);
         }
     }
 }

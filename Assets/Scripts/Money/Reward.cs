@@ -9,33 +9,31 @@ namespace Money
     {
         [SerializeField] private TMP_Text moneyText;
         [SerializeField] private RectTransform coin;
+        [SerializeField] private RectTransform rt;
 
         [Inject] private CoinTosser _coinTosser;
         [Inject] private MoneyBoard _moneyBoard;
-        
-        private const float Speed = 500;
 
         private int _money;
 
-        public void SetUp(int money)
+        public void SetUp(int money, Vector2 coinSize)
         {
+            rt.sizeDelta = coinSize;
             _money = money;
             moneyText.text = money.ToString();
         }
 
         public Tween Move(Vector3 startPosition)
         {
-            var endPosition = startPosition + Vector3.up * 500;
+            var endPosition = startPosition + Vector3.up * 200;
             var distance = Vector3.Distance(startPosition, endPosition);
             var duration = distance / 500f;
             
             transform.position = startPosition;
-            transform.localScale = Vector3.zero;
             
             var sequence = DOTween.Sequence();
             
             sequence.Append(transform.DOMove(endPosition, duration).SetEase(Ease.OutSine));
-            sequence.Join(transform.DOScale(Vector3.one, duration).SetEase(Ease.OutExpo));
             sequence.SetUpdate(true);
             
             sequence.AppendCallback(EndMove);

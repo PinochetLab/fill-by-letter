@@ -10,6 +10,9 @@ using Levels;
 using Progress;
 using Themes;
 using Boards;
+using DG.Tweening;
+using Game;
+using Tutorials;
 using UnityEngine;
 using UnityEngine.UI;
 using WordBoards;
@@ -23,17 +26,21 @@ namespace Grids
         [SerializeField] private RectTransform rectTransform;
         [SerializeField] private float spacingRatio = 0.05f;
         [SerializeField] private GridLayoutGroup gridLayoutGroup;
+        [SerializeField] private GameObject raycastBlock; 
+        [SerializeField] private float appearDuration = 1f; 
+        [SerializeField] private float startRatio = 0.7f; 
+        [SerializeField] private bool launchTutorial; 
         
         [SerializeField] private List<LetterBlock> blocks;
 
-        [SerializeField] private Level level;
-
+        [Inject] private GameController _gameController;
         [Inject] private LetterKeyboard _letterKeyboard;
         [Inject] private WordBoard _wordBoard;
         [Inject] private ProgressBoard _progressBoard;
         [Inject] private TrieWordChecker _trieWordChecker;
         [Inject] private WordHinter _wordHinter;
         [Inject] private ErrorBoard _errorBoard;
+        [Inject] private TutorialBoard _tutorialBoard;
         
         [Inject(Id = BonusType.Letter)] private BonusButton _letterButton;
         [Inject(Id = BonusType.Cell)] private BonusButton _cellButton;
@@ -49,15 +56,6 @@ namespace Grids
         
         [Inject] private DiContainer _container;
 
-        [Inject(Id = "WordIsAlreadyCollected")]
-        private ErrorType _errorTypeWordIsAlreadyCollected;
-        
-        [Inject(Id = "WordDoesNotExist")]
-        private ErrorType _errorTypeWordDoesNotExist;
-        
-        [Inject(Id = "WordDoesNotContainNewLetter")]
-        private ErrorType _errorTypeWordDoesNotContainNewLetter;
-
         public bool CanPath { get; private set; }
 
         public List<LetterBlock> Path { get; } = new ();
@@ -65,9 +63,13 @@ namespace Grids
         private int _size;
         private LetterBlock[,] _grid;
         private Solver _solver;
+        private Level _level;
+        private int _filledCellCount;
+        private int _needToFill;
+        private bool _tutorialShown;
 
         private HashSet<CellType> _types = new ();
-        public bool Drag { get; private set; }
+        public bool Drag { get; set; }
 
         private bool _pathChanged;
         
@@ -114,56 +116,161 @@ namespace Grids
             _answer = null;
         }
 
-        private void Awake()
+        public Sequence Disappear()
         {
-            //Debug.Log("lol");
-            //SetLevel().Forget();
-            SetLevel();
+            raycastBlock.SetActive(true);
+            
+            var sequence = AppearDisappear(false);
+            
+            sequence.SetUpdate(true);
+
+            return sequence;
+        }
+        
+        private Sequence Appear()
+        {
+            var sequence = AppearDisappear(true);
+
+            sequence.OnComplete(OnAppear);
+
+            return sequence;
         }
 
-        public void SetLevel()
+        private Sequence AppearDisappear(bool appear)
         {
-            Application.targetFrameRate = 300;
-            _solver = _container.Instantiate<Solver>();
+            raycastBlock.SetActive(true);
+            
+            var sequence = DOTween.Sequence();
+            var isEmpty = true;
 
-            if (level.TimeCoins.Count > 0 && !_types.Contains(CellType.TimeCoin))
+            var size = _level.Size;
+
+            var dMax = 2 * size - 1;
+
+            var duration = appearDuration / dMax;
+            var gap = duration * startRatio;
+
+            for (var d = 0; d < dMax; d++)
+            {
+                var i = d;
+                var j = 0;
+                if (d > size - 1)
+                {
+                    i = size - 1;
+                    j = d - size + 1;
+                }
+
+                var s = DOTween.Sequence();
+                var delay = d == 0 ? 0 : duration * d - gap;
+                s.AppendInterval(delay);
+
+                var q = DOTween.Sequence();
+                var empty = true;
+                
+                while (i >= 0 && j < size)
+                {
+                    var block = appear ? _grid[i, j] : _grid[_size - i - 1, _size - j - 1];
+                    var seq = appear ? block.Appear(duration) : block.Disappear(duration);
+                    if (empty)
+                    {
+                        q.Append(seq);
+                        empty = false;
+                    }
+                    else
+                    {
+                        q.Join(seq);
+                    }
+                    i--;
+                    j++;
+                }
+
+                s.Append(q);
+                
+                if (isEmpty)
+                {
+                    sequence.Append(s);
+                    isEmpty = false;
+                }
+                else
+                {
+                    sequence.Join(s);
+                }
+            }
+
+            return sequence;
+        }
+
+        private void OnAppear()
+        {
+            raycastBlock.SetActive(false);
+            
+            if (launchTutorial && !_tutorialShown)
+            {
+                _tutorialShown = true;
+                _tutorialBoard.Show(_grid, OnEndTutorial);
+            }
+            else
+            {
+                OnEndTutorial();
+            }
+        }
+
+        public void OnEndTutorial()
+        {
+            if (_level.TimeCoins.Count > 0 && !_types.Contains(CellType.TimeCoin))
             {
                 _types.Add(CellType.TimeCoin);
                 _cellTutorialBoard.ShowWithParam(CellType.TimeCoin);
             }
             
-            if (level.LetterCoins.Count > 0 && !_types.Contains(CellType.LetterCoin))
+            if (_level.LetterCoins.Count > 0 && !_types.Contains(CellType.LetterCoin))
             {
                 _types.Add(CellType.LetterCoin);
                 _cellTutorialBoard.ShowWithParam(CellType.LetterCoin);
             }
+
+            _themeController.ShowTutorial();
+        }
+
+        public void SetLevel(Level level)
+        {
+            _filledCellCount = 0;
+            _needToFill = level.Size * (level.Size - 1);
+            
+            _level = level;
+            
+            _solver = _container.Instantiate<Solver>();
             
             BuildGrid(level.Size);
             SetWord(level.Word);
             _progressBoard.SetUp(level);
-            _themeController.SetTheme(level.Theme);
+
+            Theme theme = null;
+            if (!level.Theme.IsEmpty)
+            {
+                theme = level.Theme.LoadAsset();
+            }
+            
+            _themeController.SetTheme(theme);
         }
 
         public void BuildGrid(int size)
         {
-            gridLayoutGroup.enabled = true;
-
+            gridLayoutGroup.enabled = false;
+            
             for (var i = 0; i < blocks.Count; i++)
             {
                 blocks[i].transform.SetSiblingIndex(i);
             }
             
-            var s = rectTransform.rect.width;
+            gridLayoutGroup.enabled = true;
+            
+            var s = rectTransform.rect.height;
 
             gridLayoutGroup.constraintCount = size;
-            
-            var max = Mathf.Max(size, size);
-            var sum = (max + (max - 1) * spacingRatio);
-            var cellSize = s / sum;
-            var spacing = cellSize * spacingRatio;
+            var cellSize = s / size;
             
             gridLayoutGroup.cellSize = Vector2.one * cellSize;
-            gridLayoutGroup.spacing = Vector2.one * spacing;
             
             _size = size;
             _grid = new LetterBlock[size, size];
@@ -174,24 +281,25 @@ namespace Grids
                 {
                     blocks[i].gameObject.SetActive(true);
                     
-                    blocks[i].PopUp();
-                    
                     var x = i % size;
                     var y = i / size;
 
                     _grid[x, y] = blocks[i];
-                    _grid[x, y].SetUp(x, y);
+                    _grid[x, y].SetUp(x, y, cellSize);
                     
                 }
                 else
                     blocks[i].gameObject.SetActive(false);
             }
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+
+            var sequence = Appear();
+            sequence.Play();
         }
 
         public void SetWord(string word)
         {
-            _progressBoard.AddStartWord(word);
-            
             if (word.Length != _size)
             {
                 Debug.LogError($"Word length {word.Length} is wrong");
@@ -224,13 +332,13 @@ namespace Grids
                 }
             }
 
-            foreach (var timeCoin in level.TimeCoins)
+            foreach (var timeCoin in _level.TimeCoins)
             {
                 var cell = timeCoin.Position;
                 _grid[cell.x, cell.y].SetTimer(timeCoin.Duration);
             }
             
-            foreach (var letterCoin in level.LetterCoins)
+            foreach (var letterCoin in _level.LetterCoins)
             {
                 var pos = letterCoin.Position;
                 _grid[pos.x, pos.y].SetSpecialLetter(letterCoin.Letter);
@@ -251,14 +359,30 @@ namespace Grids
             }
             
             CanPath = false;
-            _letterKeyboard.Show();
+            _letterKeyboard.Show(!_tutorialBoard.IsActive);
             _selectedBlock = block;
+            
+            if (_tutorialBoard.IsActive)
+            {
+                _tutorialBoard.OnOpenKeyboard();
+            }
         }
 
         public bool AreNear(LetterBlock a, LetterBlock b)
         {
             return a.Y == b.Y && (a.X == b.X - 1 || a.X == b.X + 1)
                 || a.X == b.X && (a.Y == b.Y - 1 || a.Y == b.Y + 1);
+        }
+
+        public bool TryDeselect()
+        {
+            if (_selectedBlock && !CanPath)
+            {
+                _selectedBlock.State = BlockState.EmptyAvailable;
+                DeselectBlock();
+                return true;
+            }
+            return false;
         }
 
         public void DeselectBlock()
@@ -308,7 +432,12 @@ namespace Grids
                 Path.Clear();
                 CanPath = true;
                 _letterKeyboard.Hide();
-                _wordBoard.Show();
+                _wordBoard.Show(!_tutorialBoard.IsActive);
+
+                if (_tutorialBoard.IsActive)
+                {
+                    _tutorialBoard.OnTypeLetter();
+                }
             }
         }
 
@@ -317,7 +446,6 @@ namespace Grids
             if (Path.Count == 0)
             {
                 _pathChanged = false;
-                Drag = true;
             }
             
             if (Path.Count != 0 && (!AreNear(Path.Last(), block) || Path.Contains(block)))
@@ -328,6 +456,24 @@ namespace Grids
             if (Path.Count > 0)
             {
                 _pathChanged = true;
+            }
+
+            if (_tutorialBoard.IsActive && !_tutorialBoard.OneLine)
+            {
+                _tutorialBoard.OnAddLetter();
+            }
+
+            if (Path.Count != 0)
+            {
+                var last = Path.Last();
+
+                var a = last.Position;
+                var b = block.Position;
+
+                var ab = b - a;
+                
+                last.AddDirection(ab, true);
+                block.AddDirection(-ab, false);
             }
             
             _wordMiniBoard.AddLetter(block.Letter);
@@ -355,6 +501,13 @@ namespace Grids
                 if (_pathChanged)
                 {
                     CompletePath();
+                    if (!_tutorialBoard.IsActive)
+                    {
+                        ClearPath();
+                    }
+                }
+                if (_tutorialBoard.IsActive)
+                {
                     ClearPath();
                 }
             }
@@ -370,6 +523,19 @@ namespace Grids
             if (block != Path.Last())
             {
                 return false;
+            }
+            
+            if (Path.Count > 1)
+            {
+                var last = Path[^2];
+
+                var a = last.Position;
+                var b = block.Position;
+
+                var ab = b - a;
+                
+                last.RemoveDirection(ab);
+                block.RemoveDirection(-ab);
             }
             
             _trieWordChecker.RemoveLetter();
@@ -493,22 +659,32 @@ namespace Grids
 
             if (!PathContainsNewLetter())
             {
-                _errorBoard.PopUp(_errorTypeWordDoesNotContainNewLetter, 
-                    word.ToUpperInvariant(), 
-                    _selectedBlock.Letter.ToString().ToUpperInvariant());
+                _errorBoard.ShowWordDoesNotContainNewLetter(word, _selectedBlock.Letter);
                 return;
             }
 
             if (!_trieWordChecker.IsWordCorrect())
             {
-                _errorBoard.PopUp(_errorTypeWordDoesNotExist, word.ToUpperInvariant());
+                _errorBoard.ShowWordDoesNotExist(word);
                 return;
             }
 
             if (!_progressBoard.CanMake(word))
             {
-                _errorBoard.PopUp(_errorTypeWordIsAlreadyCollected, word.ToUpperInvariant());
+                _errorBoard.ShowWordIsAlreadyCollected(word);
                 return;
+            }
+
+            if (_tutorialBoard.IsActive)
+            {
+                if (_tutorialBoard.Path.SequenceEqual(Path.Select(b => b.Position)))
+                {
+                    _tutorialBoard.OnTypeWord();
+                }
+                else
+                {
+                    return;
+                }
             }
             
             var letterIndex = Path.IndexOf(_selectedBlock);
@@ -538,6 +714,13 @@ namespace Grids
 
             SwitchOffBonuses();
             ClearAnswer();
+
+            _filledCellCount++;
+            if (_filledCellCount >= _needToFill)
+            {
+                Debug.Log("A");
+                _gameController.GotToNextLevel();
+            }
         }
 
         private void SwitchOffBonuses()
@@ -580,6 +763,11 @@ namespace Grids
 
         public void StopHintLetter()
         {
+            if (!HintedLetter.HasValue)
+            {
+                return;
+            }
+            
             HintedLetter = null;
             
             foreach (var block in _grid)
@@ -625,7 +813,12 @@ namespace Grids
 
         public void StopHintCell()
         {
-            var p = Answer.LetterPos;
+            if (!HintedPos.HasValue)
+            {
+                return;
+            }
+            
+            var p = HintedPos.Value;
 
             HintedPos = null;
             
@@ -726,6 +919,8 @@ namespace Grids
             block.SetLetter('?');
             ReplacePlace = block.Position;
             _letterKeyboard.Show();
+            
+            ClearAnswer();
         }
         
         public void StartErase()
@@ -777,12 +972,15 @@ namespace Grids
         public void ChooseErase(LetterBlock block)
         {
             block.State = BlockState.EmptyAvailable;
+            _filledCellCount--;
 
             StopErase();
             
             _eraseButton.SwitchOff();
             
             SwitchOffBonuses();
+            
+            ClearAnswer();
         }
         
         public void StartFlag()
@@ -797,13 +995,13 @@ namespace Grids
             
             foreach (var block in _grid)
             {
-                if (block.State == BlockState.Filled)
+                if (block.State is BlockState.EmptyNotAvailable or BlockState.EmptyAvailable)
                 {
-                    block.Hide();
+                    block.StartHint();
                 }
                 else
                 {
-                    block.StartHint();
+                    block.Hide();
                 }
             }
             
@@ -836,10 +1034,21 @@ namespace Grids
             block.State = BlockState.Flag;
 
             StopFlag();
+            block.Complete(true);
             
             _flagButton.SwitchOff();
             
             SwitchOffBonuses();
+            
+            _filledCellCount++;
+            
+            if (_filledCellCount >= _needToFill)
+            {
+                Debug.Log("B");
+                _gameController.GotToNextLevel();
+            }
+            
+            ClearAnswer();
         }
     }
 }

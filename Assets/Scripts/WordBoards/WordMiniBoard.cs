@@ -21,7 +21,6 @@ namespace WordBoards
         private void Awake()
         {
             Clear();
-            flyBlocks.ForEach(block => block.gameObject.SetActive(false));
         }
 
         public void AddLetter(char letter)
@@ -57,6 +56,7 @@ namespace WordBoards
             sequence.Append(flyBlock.transform.DOMove(scoreBlock.position, duration));
             sequence.Join(flyBlock.transform.DOScale(0, duration));
             sequence.OnComplete(() => flyBlock.gameObject.SetActive(false));
+            sequence.SetUpdate(true);
             sequence.Play();
         }
 

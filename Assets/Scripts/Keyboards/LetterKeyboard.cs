@@ -2,6 +2,8 @@
 using System.Linq;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.UI;
 
 namespace Keyboards
 {
@@ -9,36 +11,60 @@ namespace Keyboards
     {
         [SerializeField] private List<LetterKey> allKeys;
         [SerializeField] private GameObject keyboard;
-        [SerializeField] private List<CanvasGroup> canvasGroups;
+        [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private RectTransform keyboardRt;
         [SerializeField] private RectTransform gridRt;
+        [SerializeField] private CanvasGroup interactableCg;
+        [SerializeField] private CanvasGroup keyboardCg;
+        [SerializeField] private int cellsPerLine = 7;
 
         [SerializeField] private float showDuration = 0.2f;
         [SerializeField] private float hideDuration = 0.2f;
-
-        private const string Alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
-        private const string Wovels = "аеёиоуыэюя";
 
         private List<LetterKey> _keys;
 
         private bool _show;
         private float _height;
 
+        private string _alphabet;
+        private string _wovels;
+
         private Sequence _showSequence;
 
         private void Awake()
         {
-            SetAlphabet(Alphabet);
+            SetUp();
+        }
+
+        private void SetUp()
+        {
+            var alphabetEntry = new LocalizedAsset<Alphabet>
+            {
+                TableReference = "AlphabetTable",
+                TableEntryReference = "Alphabet"
+            };
+            
+            var handle = alphabetEntry.LoadAssetAsync();
+            handle.WaitForCompletion();
+
+            var alphabet = handle.Result;
+            
+            _alphabet = alphabet.AllLetters;
+            _wovels = alphabet.Wovels;
+            
+            SetAlphabet();
             SetInteractable(false);
             _height = keyboardRt.rect.height;
             gridRt.anchoredPosition = Vector2.down * _height;
-            canvasGroups.ForEach(c => c.alpha = 0);
+            canvasGroup.alpha = 0;
             SwitchOff();
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
         }
 
         private void SetInteractable(bool interactable)
         {
-            _keys.ForEach(k => k.SetInteractable(interactable));
+            interactableCg.interactable = interactable;
         }
 
         private void SwitchOn()
@@ -51,7 +77,7 @@ namespace Keyboards
             keyboard.SetActive(false);
         }
 
-        public void Show()
+        public void Show(bool blackScreen = true)
         {
             if (_show)
             {
@@ -69,12 +95,12 @@ namespace Keyboards
 
             _showSequence = DOTween.Sequence();
             _showSequence.Append(gridRt.DOAnchorPosY(0, duration));
-            
-            foreach (var canvasGroup in canvasGroups)
+            if (blackScreen)
             {
                 _showSequence.Join(canvasGroup.DOFade(1, duration));
             }
-            
+
+            _showSequence.Join(keyboardCg.DOFade(1, duration));
             _showSequence.OnComplete(() => SetInteractable(true));
             _showSequence.SetUpdate(true);
             _showSequence.Play();
@@ -98,27 +124,23 @@ namespace Keyboards
 
             _showSequence = DOTween.Sequence();
             _showSequence.Append(gridRt.DOAnchorPosY(-_height, duration));
-            
-            foreach (var canvasGroup in canvasGroups)
-            {
-                _showSequence.Join(canvasGroup.DOFade(0, duration));
-            }
-            
+            _showSequence.Join(canvasGroup.DOFade(0, duration));
+            _showSequence.Join(keyboardCg.DOFade(0, duration));
             _showSequence.OnComplete(SwitchOff);
             _showSequence.SetUpdate(true);
             _showSequence.Play();
         }
 
-        private void SetAlphabet(string alphabet)
+        private void SetAlphabet()
         {
-            _keys = allKeys.Take(alphabet.Length).ToList();
+            _keys = allKeys.Take(_alphabet.Length).ToList();
             
             for (var i = 0; i < allKeys.Count; i++)
             {
-                if (i < alphabet.Length)
+                if (i < _alphabet.Length)
                 {
-                    var letter = alphabet[i];
-                    allKeys[i].SetLetter(letter, Wovels.Contains(letter));
+                    var letter = _alphabet[i];
+                    allKeys[i].SetLetter(letter, _wovels.Contains(letter));
                     allKeys[i].gameObject.SetActive(true);
                 }
                 else
@@ -126,6 +148,35 @@ namespace Keyboards
                     allKeys[i].gameObject.SetActive(false);
                 }
             }
+            
+            keyboard.SetActive(true);
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
+
+            for (var i = 0; i < _alphabet.Length; i++)
+            {
+                allKeys[i].GetPosition();
+            }
+            
+            keyboard.SetActive(false);
+        }
+
+        public Vector2 ShowLetter(char letter)
+        {
+            _keys.ForEach(k => k.Hide());
+
+            var index = _alphabet.IndexOf(letter);
+
+            var key = _keys[index];
+            
+            key.Show();
+
+            return key.GetPosition();
+        }
+
+        public void ShowAll()
+        {
+            _keys.ForEach(k => k.Show());
         }
     }
 }

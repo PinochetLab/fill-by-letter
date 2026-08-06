@@ -9,11 +9,11 @@ namespace Themes
         [SerializeField] private string themeName;
         [SerializeField] private int multiplier;
         [SerializeField] private Sprite sprite;
-        [SerializeField] private AssetReference glossary;
+        [SerializeField] private TextAsset glossary;
         
         public string ThemeName => themeName;
         public int Multiplier => multiplier;
         public Sprite Sprite => sprite;
-        public AssetReference Glossary => glossary;
+        public TextAsset Glossary => glossary;
     }
 }

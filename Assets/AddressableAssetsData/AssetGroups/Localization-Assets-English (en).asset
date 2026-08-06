@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Localization-Assets-English (en)
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Localization-Assets-English (en)
+  m_GUID: 21afc133fb71ced4d8ae7c4c30e5e493
+  m_SerializeEntries:
+  - m_GUID: 0b48455e963cd464fa62986e33619101
+    m_Address: Assets/Scriptable Objects/Cells/Time Coin English.asset
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3491ba7676664dd42a872ccf0ffb64be
+    m_Address: Flag English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3dc32a792e5aa814fabc987490ad263b
+    m_Address: Word Does Not Exist English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ae485d9fc3b03944a991e8d74b1aa1f
+    m_Address: TapOnEmptyCellToPutLetter English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b4e2f2b99b374f4f9ae56413ca8bbce
+    m_Address: Assets/Levels/English/English Level Set.asset
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e420b74fb5a12244971dfeaecadd1fe
+    m_Address: Animals Russian 1
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 76186b66ea5a4f946bfea8f070a296e5
+    m_Address: Book English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f66ff74382c3a14697ad95a6e7699f9
+    m_Address: Assets/Dictionaries/Trie/words-english.json
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 884826b1c5c686946a084d21ebf49cf0
+    m_Address: Word Is Already Collected English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d3f9ec7d497c34428467cf753b2b871
+    m_Address: English Tutorial
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a71b488dd3dc5824ca5c97d9e4a69424
+    m_Address: Pencil English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba02433153303184cb7e2b835f71ec1e
+    m_Address: Word Does Not Contain New Letter English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c8523275d87d0d64a9ff556d4a8265e4
+    m_Address: Eraser English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecf19588eb377b342a9bccd66c175130
+    m_Address: Alphabet English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f25c5768899543240a912f1edc31c742
+    m_Address: Arrow English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f46f6d8dba59ec745a05226ca465503a
+    m_Address: Loupe English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f72dc3d9af24f75449d25a418be5bf5a
+    m_Address: Food English
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 1
+  m_Settings: {fileID: 11400000, guid: c61fad8d9b5fb8448972ec494641a1df, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: dea4c104abdaa8040949d29118ff11c9, type: 2}
+    - {fileID: 11400000, guid: 247b1810777fec34886c46cceeba163f, type: 2}
