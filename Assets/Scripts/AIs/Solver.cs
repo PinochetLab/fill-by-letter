@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using Words;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace AIs
 {
@@ -47,7 +48,7 @@ namespace AIs
             _alphabet = alphabet.AllLetters;
         }
 
-        public Answer FindBestWord(char?[,] letters, List<Vector2Int> availablePositions)
+        public Answer FindBestWord(char?[,] letters, List<Vector2Int> availablePositions, bool isRandom = true)
         {
             List<Vector2Int> maxPath = null;
             char? answerLetter = null;
@@ -62,9 +63,9 @@ namespace AIs
                 }
             }
 
-            foreach (var position in availablePositions)
+            foreach (var position in isRandom ? availablePositions.OrderBy(_ => Random.value).ToList() : availablePositions)
             {
-                foreach (var letter in _alphabet)
+                foreach (var letter in isRandom ? _alphabet.ToCharArray().OrderBy(_ => Random.value).ToList() : _alphabet.ToCharArray().ToList())
                 {
                     letters[position.x, position.y] = letter;
 
@@ -92,32 +93,36 @@ namespace AIs
 
             return new Answer(answerLetterPos.Value, answerLetter.Value, word, maxPath);
         }
-        
-        public List<Vector2Int> FindBestPathWithNewLetter(char?[,] letters, Vector2Int[,] directions, Vector2Int newLetterPos, bool print)
+
+        private List<Vector2Int> FindBestPathWithNewLetter(char?[,] letters, Vector2Int[,] directions, Vector2Int newLetterPos, bool isRandom)
         {
             List<Vector2Int> maxPath = null;
             
-            for (var i = 0; i < letters.GetLength(0); i++)
+            var cells = (from i in Enumerable.Range(0, letters.GetLength(0))
+                from j in Enumerable.Range(0, letters.GetLength(1))
+                select new Vector2Int(i, j)).ToList();
+
+            foreach (var cell in isRandom ? cells.OrderBy(_ => Random.value).ToList() : cells)
             {
-                for (var j = 0; j < letters.GetLength(1); j++)
+                var i = cell.x;
+                var j = cell.y;
+                
+                var letter = letters[i, j];
+
+                if (letter == null)
                 {
-                    var letter = letters[i, j];
+                    continue;
+                }
 
-                    if (letter == null)
-                    {
-                        continue;
-                    }
+                var startPos = new Vector2Int(i, j);
 
-                    var startPos = new Vector2Int(i, j);
-
-                    var p = print && letter == 'к' && startPos == new Vector2Int(3, 5);
+                //var p = print && letter == 'к' && startPos == new Vector2Int(3, 5);
                     
-                    var path = FindBestPathWithNewLetter(letters, directions, startPos, newLetterPos, startPos, p);
+                var path = FindBestPathWithNewLetter(letters, directions, startPos, newLetterPos, startPos, isRandom);
 
-                    if (maxPath is null || (path is not null && path.Count > maxPath.Count))
-                    {
-                        maxPath = path;
-                    }
+                if (maxPath is null || (path is not null && path.Count > maxPath.Count))
+                {
+                    maxPath = path;
                 }
             }
             
@@ -131,8 +136,7 @@ namespace AIs
             Vector2Int startPos,
             Vector2Int newLetterPos,
             Vector2Int current,
-            bool print,
-            int depth = 0)
+            bool isRandom)
         {
             var letter = letters[current.x, current.y].Value;
 
@@ -145,7 +149,9 @@ namespace AIs
             
             Trie.AddLetter(letter);
 
-            foreach (var d in _gridController.GetDirections(current))
+            var dirs = _gridController.GetDirections(current);
+            
+            foreach (var d in isRandom ? dirs.OrderBy(_ => Random.value).ToList() : dirs)
             {
                 var v = current + d;
                 
@@ -161,7 +167,7 @@ namespace AIs
                 
                 directions[current.x, current.y] = d;
 
-                var path = FindBestPathWithNewLetter(letters, directions, startPos, newLetterPos, v, print, depth + 1);
+                var path = FindBestPathWithNewLetter(letters, directions, startPos, newLetterPos, v, isRandom);
                 if (maxPath is null || (path is not null && path.Count > maxPath.Count))
                 {
                     maxPath = path;

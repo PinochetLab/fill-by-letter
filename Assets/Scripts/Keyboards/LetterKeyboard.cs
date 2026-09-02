@@ -16,7 +16,7 @@ namespace Keyboards
         [SerializeField] private RectTransform gridRt;
         [SerializeField] private CanvasGroup interactableCg;
         [SerializeField] private CanvasGroup keyboardCg;
-        [SerializeField] private int cellsPerLine = 7;
+        [SerializeField] private GridLayoutAdvanced gridLayoutAdvanced;
 
         [SerializeField] private float showDuration = 0.2f;
         [SerializeField] private float hideDuration = 0.2f;
@@ -31,12 +31,7 @@ namespace Keyboards
 
         private Sequence _showSequence;
 
-        private void Awake()
-        {
-            SetUp();
-        }
-
-        private void SetUp()
+        public void SetUp()
         {
             var alphabetEntry = new LocalizedAsset<Alphabet>
             {
@@ -58,6 +53,17 @@ namespace Keyboards
             gridRt.anchoredPosition = Vector2.down * _height;
             canvasGroup.alpha = 0;
             SwitchOff();
+            
+            var aspectRatio = (float)Screen.width / Screen.height;
+            var targetRatio = 1170f / 2532f;
+
+            var ratio = aspectRatio / targetRatio;
+            ratio = Mathf.Sqrt(ratio);
+
+            var cellsPerLine = (int)(7 * ratio);
+
+            gridLayoutAdvanced.CellsPerLine = cellsPerLine;
+            gridLayoutAdvanced.ReplaceCells();
             
             LayoutRebuilder.ForceRebuildLayoutImmediate(gridRt);
         }

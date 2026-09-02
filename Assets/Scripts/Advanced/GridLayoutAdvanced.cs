@@ -7,7 +7,7 @@ namespace UnityEngine.UI
     [RequireComponent(typeof(RectTransform))]
     public class GridLayoutAdvanced : LayoutGroup, ILayoutSelfController
     {
-        [SerializeField] int CellsPerLine = 3;
+        [SerializeField] public int CellsPerLine = 3;
         [SerializeField] int Spacing = 0; 
         [SerializeField] float CellAspectRatio = 1;
         
@@ -47,7 +47,7 @@ namespace UnityEngine.UI
             ReplaceCells();
         }
         
-        void ReplaceCells()
+        public void ReplaceCells()
         {
             FixUserInput();
             TryDetectDirectionChange();

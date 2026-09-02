@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: letter
   bigSprite: {fileID: 6613651463783292749, guid: a8df356bca654f242a81d32c6d64edc1, type: 3}
   smallSprite: {fileID: 6613651463783292749, guid: c60aed16a858a4b42811aa2833179832, type: 3}
-  price: 100
+  price: 25
   type: 0
-  color: {r: 0, g: 0.5105278, b: 0.5396226, a: 1}
   description: Use a magnifier to find out which letter to put.

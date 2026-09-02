@@ -11,6 +11,7 @@ using Tutorials;
 using UnityEngine;
 using WordBoards;
 using Words;
+using Yandex;
 using Zenject;
 
 namespace DI
@@ -38,6 +39,10 @@ namespace DI
         [SerializeField] private ShopBoard shopBoard;
         [SerializeField] private TutorialBoard tutorialBoard;
         [SerializeField] private BoardManager boardManager;
+        [SerializeField] private MoneyController moneyController;
+        [SerializeField] private AdsController adsController;
+        [SerializeField] private LanguageController languageController;
+        [SerializeField] private DataController dataController;
         
         [Header("Bonus Buttons")]
         [SerializeField] private BonusButton letterButton;
@@ -70,6 +75,10 @@ namespace DI
             Container.Bind<ShopBoard>().FromInstance(shopBoard).AsSingle();
             Container.Bind<TutorialBoard>().FromInstance(tutorialBoard).AsSingle();
             Container.Bind<BoardManager>().FromInstance(boardManager).AsSingle();
+            Container.Bind<MoneyController>().FromInstance(moneyController).AsSingle();
+            Container.Bind<AdsController>().FromInstance(adsController).AsSingle();
+            Container.Bind<LanguageController>().FromInstance(languageController).AsSingle();
+            Container.Bind<DataController>().FromInstance(dataController).AsSingle();
 
             Container.Bind<BonusButton>().WithId(BonusType.Letter).FromInstance(letterButton);
             Container.Bind<BonusButton>().WithId(BonusType.Cell).FromInstance(cellButton);

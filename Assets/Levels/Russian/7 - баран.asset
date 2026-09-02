@@ -24,7 +24,6 @@ MonoBehaviour:
   letterCoins:
   - position: {x: 3, y: 3}
     letter: 1073
-<<<<<<<< HEAD:Assets/Levels/Russian/7 - баран.asset
   theme:
     m_TableReference:
       m_TableCollectionName: GUID:e418d9cf22ae69e4eb96e4d9948ac8bc
@@ -33,6 +32,3 @@ MonoBehaviour:
       m_Key: 
     m_FallbackState: 0
     m_WaitForCompletion: 0
-========
-  theme: {fileID: 0}
->>>>>>>> 0b7d2ba8cba00295c9f81ae7e42c6ad0b96f35d9:Assets/Levels/7 - баран.asset

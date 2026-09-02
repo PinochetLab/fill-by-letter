@@ -35,13 +35,15 @@ namespace Bonuses
         private bool _wasUsed;
 
         private BonusTool _bonusTool;
+        
+        public BonusTool BonusTool => _bonusTool;
 
         private void Start()
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(priceBoardRt);
         }
 
-        private void Awake()
+        public void LoadBonus()
         {
             _bonusTool = bonusTool.LoadAsset();
             
@@ -165,18 +167,23 @@ namespace Bonuses
             _isOn = false;
             UpdateGraphics();
         }
+
+        public void SwitchOn()
+        {
+            _isOn = true;
+            UpdateState();
+        }
         
         public void OnClick()
         {
-            if (!_wasUsed)
+            if (_isOn)
             {
-                _wasUsed = true;
-                _bonusTutorialBoard.ShowWithParam(_bonusTool);
+                _isOn = false;
+                UpdateState();
             }
             else
             {
-                _isOn = !_isOn;
-                UpdateState();
+                _bonusTutorialBoard.ShowWithParam(this);
             }
         }
     }

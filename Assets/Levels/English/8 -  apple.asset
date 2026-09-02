@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 5
   word: apple
-  firstScoreGoal: 72
-  secondScoreGoal: 100
+  firstScoreGoal: 96
+  secondScoreGoal: 132
   timeCoins:
   - position: {x: 0, y: 1}
     duration: 30
@@ -38,4 +38,11 @@ MonoBehaviour:
   - position: {x: 4, y: 3}
     duration: 30
   letterCoins: []
-  theme: {fileID: 11400000, guid: c5c482f5ba08f4242b4bafe695ec00b5, type: 2}
+  theme:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

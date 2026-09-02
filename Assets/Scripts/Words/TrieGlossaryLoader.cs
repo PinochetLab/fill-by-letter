@@ -18,8 +18,13 @@ namespace Words
         private Trie _trie;
         private GameTrie _gameTrie;
         private SolverTrie _solverTrie;
+
+        public void Load()
+        {
+            LoadGlossary();
+        }
         
-        private async void Awake()
+        private async void LoadGlossary()
         {
             try
             {

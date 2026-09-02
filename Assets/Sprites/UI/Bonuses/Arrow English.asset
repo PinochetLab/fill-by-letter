@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: cell
   bigSprite: {fileID: 21300000, guid: 8fb993f70a120e449808a31725e3c4c5, type: 3}
   smallSprite: {fileID: 21300000, guid: 704c96560ce879840b977e656b2ba789, type: 3}
-  price: 200
+  price: 50
   type: 1
-  color: {r: 0.1256888, g: 0.5245282, b: 0.25379837, a: 1}
   description: Use the arrow to find out where to place the new letter.

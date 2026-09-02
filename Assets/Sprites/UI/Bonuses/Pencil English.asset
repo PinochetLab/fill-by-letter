@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: replace
   bigSprite: {fileID: 21300000, guid: 34e6234fcb7bebb4eaee92a9df70b532, type: 3}
   smallSprite: {fileID: 21300000, guid: 7f5bb8069ff50c44ea1371cbd409d9fc, type: 3}
-  price: 100
+  price: 150
   type: 3
-  color: {r: 0, g: 0.38431373, b: 0.5019608, a: 1}
   description: Use a pencil to replace the letter in the box.

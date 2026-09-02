@@ -13,6 +13,7 @@ namespace Money
 
         [Inject] private CoinTosser _coinTosser;
         [Inject] private MoneyBoard _moneyBoard;
+        [Inject] private MoneyController _moneyController;
 
         private int _money;
 
@@ -43,7 +44,7 @@ namespace Money
 
         private void EndMove()
         {
-            _coinTosser.TossCoin(coin, _moneyBoard.Coin).OnComplete(() => _moneyBoard.AddMoney(_money));
+            _coinTosser.TossCoin(coin, _moneyBoard.Coin).OnComplete(() => _moneyController.AddMoney(_money));
         }
     }
 }

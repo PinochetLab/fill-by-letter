@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 5
   word: house
-  firstScoreGoal: 85
-  secondScoreGoal: 215
+  firstScoreGoal: 96
+  secondScoreGoal: 132
   timeCoins: []
   letterCoins:
   - position: {x: 0, y: 0}
@@ -28,4 +28,11 @@ MonoBehaviour:
     letter: 108
   - position: {x: 4, y: 0}
     letter: 101
-  theme: {fileID: 0}
+  theme:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

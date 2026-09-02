@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: erase
   bigSprite: {fileID: 21300000, guid: 0cc6d5736662de34dba7c479a55ee8fe, type: 3}
   smallSprite: {fileID: 21300000, guid: e2a9bebf3b0fac142879887b17383caf, type: 3}
-  price: 200
+  price: 150
   type: 4
-  color: {r: 0.26289573, g: 0.5169811, b: 0.053648926, a: 1}
   description: Use an eraser to erase the letter.

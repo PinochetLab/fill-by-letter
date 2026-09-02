@@ -17,6 +17,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using WordBoards;
 using Words;
+using Yandex;
 using Zenject;
 
 namespace Grids
@@ -41,6 +42,8 @@ namespace Grids
         [Inject] private WordHinter _wordHinter;
         [Inject] private ErrorBoard _errorBoard;
         [Inject] private TutorialBoard _tutorialBoard;
+        [Inject] private AdsController _adsController;
+        [Inject] private DataController _dataController;
         
         [Inject(Id = BonusType.Letter)] private BonusButton _letterButton;
         [Inject(Id = BonusType.Cell)] private BonusButton _cellButton;
@@ -67,6 +70,8 @@ namespace Grids
         private int _filledCellCount;
         private int _needToFill;
         private bool _tutorialShown;
+
+        private LevelProgress _levelProgress;
 
         private HashSet<CellType> _types = new ();
         public bool Drag { get; set; }
@@ -232,8 +237,10 @@ namespace Grids
             _themeController.ShowTutorial();
         }
 
-        public void SetLevel(Level level)
+        public void SetLevel(Level level, [CanBeNull] LevelProgress levelProgress)
         {
+            _adsController.ShowInterstitial();
+            
             _filledCellCount = 0;
             _needToFill = level.Size * (level.Size - 1);
             
@@ -245,6 +252,21 @@ namespace Grids
             SetWord(level.Word);
             _progressBoard.SetUp(level);
 
+            if (levelProgress is not null)
+            {
+                _levelProgress = levelProgress;
+                
+                SetProgress(levelProgress.FieldProgress);
+            }
+            else
+            {
+                var letters = GetLetters();
+                var flags = new List<Vector2Int>();
+                var fieldProgress = new FieldProgress(letters, flags);
+                var words = new List<string>();
+                _levelProgress = new LevelProgress(fieldProgress, words);
+            }
+
             Theme theme = null;
             if (!level.Theme.IsEmpty)
             {
@@ -252,6 +274,13 @@ namespace Grids
             }
             
             _themeController.SetTheme(theme);
+            
+            _letterButton.LoadBonus();
+            _cellButton.LoadBonus();
+            _wordButton.LoadBonus();
+            _replaceButton.LoadBonus();
+            _eraseButton.LoadBonus();
+            _flagButton.LoadBonus();
         }
 
         public void BuildGrid(int size)
@@ -298,14 +327,43 @@ namespace Grids
             sequence.Play();
         }
 
-        public void SetWord(string word)
+        public void SetProgress(FieldProgress fieldProgress)
         {
-            if (word.Length != _size)
+            for (var i = 0; i < _grid.GetLength(0); i++)
             {
-                Debug.LogError($"Word length {word.Length} is wrong");
-                return;
+                for (var j = 0; j < _grid.GetLength(1); j++)
+                {
+                    if (fieldProgress.Letters[i, j].HasValue)
+                    {
+                        _grid[i, j].State = BlockState.Filled;
+                        _grid[i, j].SetLetter(fieldProgress.Letters[i, j].Value);
+                    }
+                }
+            }
+            
+            for (var i = 0; i < _grid.GetLength(0); i++)
+            {
+                for (var j = 0; j < _grid.GetLength(1); j++)
+                {
+                    if (GetNeighbours(_grid[i, j]).Any(block => block.State == BlockState.Filled))
+                    {
+                        _grid[i, j].State = BlockState.EmptyAvailable;
+                    }
+                    else
+                    {
+                        _grid[i, j].State = BlockState.EmptyNotAvailable;
+                    }
+                }
             }
 
+            foreach (var flagPos in fieldProgress.Flags)
+            {
+                _grid[flagPos.x, flagPos.y].State = BlockState.Flag;
+            }
+        }
+
+        public void SetWord(string word)
+        {
             var y = Center;
 
             for (var i = 0; i < _size; i++)
@@ -422,6 +480,10 @@ namespace Grids
                 _grid[p.x, p.y].SetLetter(letter);
                 _letterKeyboard.Hide();
                 _replaceButton.SwitchOff();
+                
+                _levelProgress.FieldProgress.Letters[p.x, p.y] = letter;
+                UpdateLevelProgress();
+                
                 StopReplace();
                 SwitchOffBonuses();
             }
@@ -696,6 +758,12 @@ namespace Grids
             _progressBoard.MakeWord(word, score, letterIndex);
             
             _wordHinter.StopHint();
+
+            var pos = _selectedBlock.Position;
+            
+            _levelProgress.FieldProgress.Letters[pos.x, pos.y] = _selectedBlock.Letter;
+            _levelProgress.Words.Add(word);
+            UpdateLevelProgress();
             
             ClearPath();
             _wordBoard.Hide();
@@ -714,12 +782,14 @@ namespace Grids
 
             SwitchOffBonuses();
             ClearAnswer();
+            
+            _adsController.ShowInterstitial();
 
             _filledCellCount++;
             if (_filledCellCount >= _needToFill)
             {
                 Debug.Log("A");
-                _gameController.GotToNextLevel();
+                _gameController.GoToNextLevel();
             }
         }
 
@@ -971,7 +1041,14 @@ namespace Grids
 
         public void ChooseErase(LetterBlock block)
         {
-            block.State = BlockState.EmptyAvailable;
+            var available = GetNeighbours(block).Any(b => b.State == BlockState.Filled);
+            
+            block.State = available ? BlockState.EmptyAvailable : BlockState.EmptyNotAvailable;
+            
+            var pos = block.Position;
+            _levelProgress.FieldProgress.Letters[pos.x, pos.y] = null;
+            UpdateLevelProgress();
+            
             _filledCellCount--;
 
             StopErase();
@@ -1032,6 +1109,9 @@ namespace Grids
         public void ChooseFlag(LetterBlock block)
         {
             block.State = BlockState.Flag;
+            
+            _levelProgress.FieldProgress.Flags.Add(block.Position);
+            UpdateLevelProgress();
 
             StopFlag();
             block.Complete(true);
@@ -1045,10 +1125,15 @@ namespace Grids
             if (_filledCellCount >= _needToFill)
             {
                 Debug.Log("B");
-                _gameController.GotToNextLevel();
+                _gameController.GoToNextLevel();
             }
             
             ClearAnswer();
+        }
+
+        public void UpdateLevelProgress()
+        {
+            _dataController.SaveLevelProgress(_levelProgress);
         }
     }
 }

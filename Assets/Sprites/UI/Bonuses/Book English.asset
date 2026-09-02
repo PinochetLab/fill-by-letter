@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: word
   bigSprite: {fileID: 21300000, guid: 1586df2cc9ac3ff47a78ab5aecc58cb3, type: 3}
   smallSprite: {fileID: 21300000, guid: e0a18bff002d89141b53a08ea144f047, type: 3}
-  price: 300
+  price: 100
   type: 2
-  color: {r: 0.5245282, g: 0.101936586, b: 0.37265936, a: 1}
   description: Use the book to find out what word you can assemble.

@@ -16,7 +16,6 @@ MonoBehaviour:
   actionName: flag
   bigSprite: {fileID: 21300000, guid: 4b4774253bd8e3248a517754d7c1c546, type: 3}
   smallSprite: {fileID: 21300000, guid: e0a5fa38bec8894458a551e076027090, type: 3}
-  price: 300
+  price: 100
   type: 5
-  color: {r: 0.49370772, g: 0.10690636, b: 0.6226415, a: 1}
   description: Use the flag to fill the cell without using a letter.

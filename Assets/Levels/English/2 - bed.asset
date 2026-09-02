@@ -14,10 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 3
   word: bed
-  firstScoreGoal: 20
-  secondScoreGoal: 35
+  firstScoreGoal: 24
+  secondScoreGoal: 36
   timeCoins:
   - position: {x: 1, y: 0}
     duration: 100
   letterCoins: []
-  theme: {fileID: 0}
+  theme:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

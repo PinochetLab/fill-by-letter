@@ -10,24 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86c582a6e1de4d478ec3354a2e698288, type: 3}
-<<<<<<<< HEAD:Assets/Levels/English/1 - car.asset
-  m_Name: 1 - car
-  m_EditorClassIdentifier: 
-  size: 3
-  word: car
-  firstScoreGoal: 15
-  secondScoreGoal: 25
-  timeCoins: []
-========
   m_Name: "2 - \u043E\u0441\u0430"
   m_EditorClassIdentifier: 
   size: 3
-  word: "\u043E\u0441\u0430"
-  firstScoreGoal: 20
-  secondScoreGoal: 35
-  timeCoins:
-  - position: {x: 1, y: 0}
-    duration: 100
->>>>>>>> 0b7d2ba8cba00295c9f81ae7e42c6ad0b96f35d9:Assets/Levels/2 - оса.asset
+  word: car
+  firstScoreGoal: 24
+  secondScoreGoal: 36
+  timeCoins: []
   letterCoins: []
-  theme: {fileID: 0}
+  theme:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

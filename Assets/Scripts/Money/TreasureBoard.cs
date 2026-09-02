@@ -30,6 +30,7 @@ namespace Money
 
         [Inject] private CoinTosser _coinTosser;
         [Inject] private MoneyBoard _moneyBoard;
+        [Inject] private MoneyController _moneyController;
         
         private Sequence _shakeSequence;
         private Sequence _openSequence;
@@ -193,7 +194,7 @@ namespace Money
                 var s = DOTween.Sequence();
 
                 s.Append(_coinTosser.TossCoin(coins[i], _moneyBoard.Coin));
-                s.OnComplete(() => _moneyBoard.AddMoney(1));
+                s.OnComplete(() => _moneyController.AddMoney(1));
 
                 _collectCoinsSequence.Insert(delay, s);
                 

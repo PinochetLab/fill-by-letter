@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 4
   word: word
-  firstScoreGoal: 57
+  firstScoreGoal: 48
   secondScoreGoal: 72
   timeCoins:
   - position: {x: 3, y: 0}
@@ -22,4 +22,11 @@ MonoBehaviour:
   letterCoins:
   - position: {x: 0, y: 3}
     letter: 111
-  theme: {fileID: 0}
+  theme:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0

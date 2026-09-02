@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 4
   word: time
-  firstScoreGoal: 50
-  secondScoreGoal: 65
+  firstScoreGoal: 48
+  secondScoreGoal: 72
   timeCoins: []
   letterCoins: []
   theme:

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 5
   word: lemon
-  firstScoreGoal: 65
-  secondScoreGoal: 92
+  firstScoreGoal: 96
+  secondScoreGoal: 132
   timeCoins:
   - position: {x: 2, y: 0}
     duration: 180

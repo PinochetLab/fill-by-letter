@@ -13,26 +13,14 @@ namespace Money
 
         [Inject] private CoinTosser _coinTosser;
         [Inject] private ShopBoard _shopBoard;
+        [Inject] private MoneyController _moneyController;
 
-        private int _money;
-
-        private void Awake()
+        public void UpdateMoney(int money)
         {
-            UpdateMoneyText();
+            moneyText.text = money.ToString();
         }
         
         public RectTransform Coin => coin;
-
-        private void UpdateMoneyText()
-        {
-            moneyText.text = _money.ToString();
-        }
-
-        public void AddMoney(int amount)
-        {
-            _money += amount;
-            UpdateMoneyText();
-        }
 
         public void OnClick()
         {
