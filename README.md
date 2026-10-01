@@ -3,8 +3,6 @@
 A 5×5 word puzzle game where players place letters on the board
 to discover valid words.
 
-[GAMEPLAY GIF]
-
 ## About
 
 Personal Unity project developed from scratch.
